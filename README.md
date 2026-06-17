@@ -32,6 +32,44 @@ npx serve .
 
 Then visit <http://localhost:8000>.
 
+## Design system
+
+### Fonts
+
+From **"you're too emotional"** downward, all copy uses **Source Serif Pro** in exactly two styles:
+
+- **Bold** — display / large lines
+- **Italic** — small lines (e.g. science notes, footer)
+
+No other typefaces in this section. All text is **black** (`#000`).
+
+Earlier sections above that point still use **Fraunces**.
+
+### Typography (work section, from "you're too emotional" down)
+
+Poetry-style rules:
+
+- always lowercase
+- a normal word space before sentence-ending periods (e.g. `themselves .`, not `themselves.`)
+- spaced punctuation elsewhere where needed (e.g. `speaking ;`, `says :`)
+- text is never shown in boxes or plates — plain on the canvas
+
+### Particles
+
+This page uses the **glyph version** — particles render as flower glyphs (✿ ❀ ✾ etc.), not spheres or tiles.
+
+### Color
+
+Palette is inspired by a hand-drawn park illustration — warm and saturated rather than muted greys:
+
+- creamy off-white background (`#F9F9F5`)
+- spring leaf & forest greens
+- terracotta & warm coral
+- blossom pink & lavender
+- sunny yellow & sky blue
+
+See `PALETTE` in `index.html` for the exact values.
+
 ## Deployment
 
 This project deploys to **Vercel** automatically on every push to `main`.
@@ -54,10 +92,18 @@ gut-feeling/
 
 ## Working together
 
-1. **Pull before you start:** `git pull` to grab the latest changes
-2. **Make a branch for non-trivial changes:** `git checkout -b your-name/feature`
-3. **Commit often** with clear messages
-4. **Push and open a PR** — gets you a preview URL automatically
-5. **Merge to `main`** when ready — live site updates
+### Section ownership
 
-For tiny changes (typos, copy tweaks), pushing directly to `main` is fine.
+- **Maddie** — header through "but, these signals are invisible." (S0 → S2)
+- **Catherine** — through "More than a billion women will be in menopause globally by 2030." (S3)
+- **Katarina** — storm through garden (S4 → end)
+
+### Workflow
+
+1. **Pull before you start:** `git pull origin main` to grab the latest baseline
+2. **Work on your own branch:** `name/feature` convention (e.g. `maddi/header-landing`)
+3. **Commit often** with clear messages
+4. **Push and open a PR** to `main` when your section is ready
+5. **Merge to `main`** when reviewed — live site updates
+
+If you change something the whole team uses (palette, typography, etc.), flag it in the group chat so others can pull and rebase.
