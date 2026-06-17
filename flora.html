@@ -879,9 +879,11 @@ function drawBlockField(growProg, alpha, t){
   const sorted = [...BLOCK_FIELD].sort((a, b) => (a.row + a.col) - (b.row + b.col));
 
   for(const blk of sorted){
-    // per-block staggered growth (center grows first)
-    const localGrow = seg(growProg, blk.gOrder*0.5, blk.gOrder*0.5 + 0.5);
-    const growE = easeOut(localGrow);
+    // per-block staggered growth (center grows first). Each cube rises over a
+    // long slice of the window with a gentle in-out ease, so growth reads as a
+    // slow, deliberate climb rather than a quick pop.
+    const localGrow = seg(growProg, blk.gOrder*0.35, blk.gOrder*0.35 + 0.65);
+    const growE = ease(localGrow);
     if(growE <= 0.001) continue;
 
     const floatY = Math.sin(t * 0.7 + blk.col * 0.8 + blk.row * 0.5) * 1.8;
@@ -1011,11 +1013,13 @@ function frame(){
   const isoA  = seg(p0, SEC.s4c[0]+0.005, SEC.s4c[1]) * (p0>SEC.s6[0]? 1-seg(p0,SEC.s6[0]+0.03,1)*0.55 : 1);
 
   // J-shape stomach silhouette fades out as it hands off to the diamond grid
-  const condenseFade = 1 - seg(p0, 0.515, 0.542);
-  // S3b choreography: glyphs gone → J dots form a diamond grid → cubes grow up
-  const diamondForm = seg(p0, 0.542, 0.572);     // outline dots migrate into the grid
-  const diamondFade = 1 - seg(p0, 0.565, 0.595); // grid dots fade as cubes rise over them
-  const blockGrow   = seg(p0, 0.560, 0.600);     // cubes extrude upward
+  const condenseFade = 1 - seg(p0, 0.512, 0.538);
+  // S3b choreography: glyphs gone → J dots form a diamond grid → cubes grow up.
+  // The cube growth is intentionally spread across a wide scroll window so the
+  // viewer has time to watch the blocks rise and sit with the impact.
+  const diamondForm = seg(p0, 0.532, 0.556);     // outline dots migrate into the grid (earlier)
+  const diamondFade = 1 - seg(p0, 0.560, 0.590); // grid dots fade as cubes rise over them
+  const blockGrow   = seg(p0, 0.552, 0.600);     // cubes extrude upward (slow, wide window)
 
   if(lineA>0.01){
     const wave = seg(p0, SEC.s1[0], SEC.s1[0]+0.06)*(1-seg(p0,SEC.s1[0]+0.08,SEC.s2[0]));
