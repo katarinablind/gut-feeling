@@ -7,11 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Symbols+2&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Source+Serif+Pro:ital,wght@0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Symbols+2&display=swap"
   rel="stylesheet" />
 <style>
   *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; background:#FFFFFF; }
+  html,body{ margin:0; padding:0; background:#F9F9F5; }
   body{
     font-family:'Fraunces', Georgia, serif;
     color:#1A1A1A;
@@ -22,7 +22,7 @@
   /* Fixed canvas — the persistent particle field */
   #stage{
     position:fixed; inset:0; z-index:1;
-    background:#FFFFFF;
+    background:#F9F9F5;
   }
   #c{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 
@@ -51,6 +51,14 @@
   }
   .quietitalic{ font-style:italic; color:#555; }
   .faint{ color:#9a9a9a; }
+
+  /* ── work section: from "you're too emotional" down (README design system) ──
+     Source Serif Pro only — bold for display lines, italic for small lines,
+     all black, no boxes/plates. */
+  .work, .work *{ font-family:'Source Serif Pro', Georgia, serif; color:#000; }
+  .work.lg, .work .lg{ font-weight:700; font-style:normal; }
+  .work.md, .work.sm, .work.quietitalic, .work .mono{ font-weight:400; font-style:italic; }
+  .work .mono{ letter-spacing:0; max-width:none; }
 
   /* a soft white plate so frozen-storm copy stays readable */
   .plate{
@@ -136,25 +144,25 @@ are invisible.</div>
     <div class="t mono" data-in="0.405" data-out="0.435" style="bottom:14%; right:6%; text-align:right;">what the science says: ~90% of serotonin is produced in the gut. gut microbes help regulate its production.</div>
 
     <!-- S3 -->
-    <div class="t lg" data-in="0.448" data-out="0.598" style="top:9%; left:6%;">during menopause,
+    <div class="t lg" data-in="0.448" data-out="0.540" style="top:9%; left:6%;">during menopause,
 they become hard to read.</div>
-    <div class="t md" data-in="0.540" data-out="0.598" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
+    <div class="t md" data-in="0.555" data-out="0.598" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
 
     <!-- S4 -->
-    <div class="t lg" data-in="0.612" data-out="0.652" style="top:44%; left:50%; transform:translate(-50%,-50%);">“you’re too emotional”</div>
-    <div class="t plate" data-in="0.662" data-out="0.705" style="top:42%; left:9%;">
+    <div class="t work lg" data-in="0.612" data-out="0.652" style="top:44%; left:50%; transform:translate(-50%,-50%);">“you’re too emotional”</div>
+    <div class="t work" data-in="0.662" data-out="0.705" style="top:42%; left:9%; white-space:normal; max-width:360px;">
       <div class="lg" style="font-size:clamp(22px,2.6vw,34px); line-height:1.16;">over time,
 many women stop
-trusting themselves.</div>
-      <div class="mono" style="margin-top:14px; max-width:none;">what the science says: 20% of working women experience a loss of confidence during menopause.</div>
+trusting themselves .</div>
+      <div class="mono" style="margin-top:14px; max-width:none;">what the science says : 20% of working women experience a loss of confidence during menopause .</div>
     </div>
 
     <!-- S5 -->
-    <div class="t lg" data-in="0.770" data-out="0.915" style="top:10%; right:7%; text-align:right;">your body has always
-been speaking;</div>
+    <div class="t work lg" data-in="0.770" data-out="0.915" style="top:10%; right:7%; text-align:right;">your body has always
+been speaking ;</div>
 
     <!-- S6 -->
-    <div class="t md quietitalic" data-in="0.930" data-out="1.01" style="bottom:12%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center;">we are not doctors&nbsp;♡</div>
+    <div class="t work md quietitalic" data-in="0.930" data-out="1.01" style="bottom:12%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center;">we are not doctors&nbsp;♡</div>
   </div>
 
   <div id="annot"></div>
@@ -163,8 +171,8 @@ been speaking;</div>
   <!-- DEV ONLY — remove this whole block for production -->
   <div id="devPanel">
     <span class="tag">dev · particle</span>
-    <button data-mode="A" class="on">spheres</button>
-    <button data-mode="B">glyphs</button>
+    <button data-mode="A">spheres</button>
+    <button data-mode="B" class="on">glyphs</button>
     <button data-mode="C">tiles</button>
     <button class="x" id="devHide" title="hide (H)">✕</button>
   </div>
@@ -197,7 +205,17 @@ function resize(){
 const TOTAL_VH = 9.2;
 
 /* ---------- palette ---------- */
-const PALETTE = ['#A8B5A2','#C4A59E','#8FA3B8','#B8A98A','#7EA8A2','#B0A8C2','#C49A87','#9AAA8C'];
+// hand-drawn park palette — warm & saturated (README design system)
+const PALETTE = [
+  '#7CB342', // spring leaf green
+  '#2E7D4F', // forest green
+  '#C75D3C', // terracotta
+  '#E8775A', // warm coral
+  '#E89BB4', // blossom pink
+  '#9B8BC4', // lavender
+  '#F2C14E', // sunny yellow
+  '#5DA6C9'  // sky blue
+];
 function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255, n>>8&255, n&255]; }
 function rgbStr(r,g,b,a){ return `rgba(${r|0},${g|0},${b|0},${a===undefined?1:a})`; }
 function mix(c, t, target){ // t toward target([r,g,b])
@@ -326,36 +344,87 @@ const pointer={x:W*0.5,y:H*0.5,active:false};
 window.addEventListener('pointermove',e=>{ pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true; });
 window.addEventListener('pointerleave',()=>{ pointer.active=false; });
 
-/* ---------- gut silhouette ---------- */
-function gutGeom(){
-  const cx=W*0.5, cy=H*0.52, R=Math.min(W,H)*0.255, sy=1.16;
-  return {cx,cy,R,sy};
+/* ---------- gut silhouette (J-shaped stomach from reference SVG) ---------- */
+// normalized SVG coords (0–1) relative to 952×796 viewBox
+const GUT_OUTER_NORM = [
+  [0.8929,0.0126],[0.8929,0.1093],[0.9228,0.2095],[0.9529,0.3077],
+  [0.9876,0.4038],[0.9748,0.5387],[0.8806,0.6763],[0.7298,0.8089],
+  [0.5484,0.8307],[0.3648,0.8010],[0.1771,0.7834],[0.1237,0.8856],
+  [0.0799,0.9820]
+];
+const GUT_INNER_NORM = [
+  [0.7721,0.0400],[0.7669,0.1377],[0.7932,0.2445],[0.7039,0.3236],
+  [0.6146,0.4028],[0.5075,0.4593],[0.4003,0.5158],[0.3184,0.5158],
+  [0.2291,0.5724],[0.1398,0.6289],[0.0505,0.7206],[0.0327,0.8274],
+  [0.0148,0.9342]
+];
+function gutScreenPts(){
+  // map normalized SVG coords to screen; SVG aspect ratio 952:796
+  const scale = H * 0.85;                       // fit within 85% of screen height
+  const shapeW = (0.988 - 0.015);
+  const ox = (W - shapeW * scale * (952/796)) / 2;  // center horizontally
+  const oy = H * 0.06;                          // top padding
+  const sx = scale * (952/796);
+  const sy = scale;
+  const outer = GUT_OUTER_NORM.map(([nx,ny]) => ({ x: ox + nx*sx, y: oy + ny*sy }));
+  const inner = GUT_INNER_NORM.map(([nx,ny]) => ({ x: ox + nx*sx, y: oy + ny*sy }));
+  return { outer, inner };
 }
-function gutR(theta){ return 1 + 0.16*Math.sin(3*theta+0.6) + 0.10*Math.sin(5*theta-0.4); }
-function gutInside(px,py){
-  const g=gutGeom(); const dx=(px-g.cx), dy=(py-g.cy)/g.sy;
-  const r=Math.hypot(dx,dy), th=Math.atan2(dy,dx);
-  return r < g.R*gutR(th)*0.97;
+let _gutPts = null, _gutPtsKey = '';
+function getGutPts(){
+  const key = W+'x'+H;
+  if(_gutPtsKey !== key){ _gutPts = gutScreenPts(); _gutPtsKey = key; }
+  return _gutPts;
 }
-// interior slots (computed once per size)
+// closed polygon: outer top→bottom, then inner bottom→top
+function buildGutPolygon(){
+  const {outer, inner} = getGutPts();
+  return [...outer, ...[...inner].reverse()];
+}
+let _gutPoly = null, _gutPolyKey = '';
+function getGutPoly(){
+  const key = W+'x'+H;
+  if(_gutPolyKey !== key){ _gutPoly = buildGutPolygon(); _gutPolyKey = key; }
+  return _gutPoly;
+}
+function gutInside(px, py){
+  const poly = getGutPoly();
+  let inside = false;
+  for(let i=0, j=poly.length-1; i<poly.length; j=i++){
+    const xi=poly[i].x, yi=poly[i].y, xj=poly[j].x, yj=poly[j].y;
+    const intersect = ((yi>py) !== (yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi);
+    if(intersect) inside = !inside;
+  }
+  return inside;
+}
+// approximate center/extent of the stomach, used by S3 block layout
+function gutBounds(){
+  const poly = getGutPoly();
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const pt of poly){
+    if(pt.x<minX)minX=pt.x; if(pt.x>maxX)maxX=pt.x;
+    if(pt.y<minY)minY=pt.y; if(pt.y>maxY)maxY=pt.y;
+  }
+  return { cx:(minX+maxX)/2, cy:(minY+maxY)/2, R:Math.min(maxX-minX,maxY-minY)/2, sy:1, minX, minY, maxX, maxY };
+}
+// interior + outline slots (computed once per size)
 let interiorSlots=[], outlineSlots=[], gutKey='';
 function buildGutSlots(){
-  const g=gutGeom(); const key=W+'x'+H;
+  const key = W+'x'+H;
   if(gutKey===key) return; gutKey=key;
-  outlineSlots=[]; const K=64;
-  for(let k=0;k<K;k++){
-    const th=k/K*Math.PI*2; const R=g.R*gutR(th);
-    outlineSlots.push({x:g.cx+Math.cos(th)*R, y:g.cy+Math.sin(th)*R*g.sy});
-  }
-  interiorSlots=[];
-  const step=g.R*0.16;
-  for(let yy=g.cy-g.R*g.sy; yy<g.cy+g.R*g.sy; yy+=step){
-    for(let xx=g.cx-g.R; xx<g.cx+g.R; xx+=step){
-      const jx=xx+(Math.random()-0.5)*step*0.5, jy=yy+(Math.random()-0.5)*step*0.5;
-      if(gutInside(jx,jy)){
-        const dx=(jx-g.cx), dy=(jy-g.cy)/g.sy;
-        if(Math.hypot(dx,dy) < g.R*0.80) interiorSlots.push({x:jx,y:jy});
-      }
+
+  // outlineSlots = the actual dot positions from both walls
+  const {outer, inner} = getGutPts();
+  outlineSlots = [...outer, ...inner];
+
+  // interiorSlots = grid of points inside the polygon
+  interiorSlots = [];
+  const step = Math.min(W, H) * 0.055;
+  for(let yy = H*0.04; yy < H*0.97; yy += step){
+    for(let xx = W*0.01; xx < W*0.99; xx += step){
+      const jx = xx + (Math.random()-0.5)*step*0.3;
+      const jy = yy + (Math.random()-0.5)*step*0.3;
+      if(gutInside(jx, jy)) interiorSlots.push({x:jx, y:jy});
     }
   }
 }
@@ -396,7 +465,7 @@ function buildGarden(){
 }
 
 /* ---------- mode ---------- */
-let MODE='A';
+let MODE='B'; // README: this page renders particles as flower glyphs
 document.getElementById('devPanel').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
   if(b.id==='devHide'){ document.getElementById('devPanel').classList.add('hidden'); return; }
@@ -469,6 +538,42 @@ function drawGridDots(alpha){
   for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){
     const x=padX+gw*i/(COLS-1), y=padY+gh*j/(ROWS-1);
     ctx.beginPath(); ctx.arc(x,y,1.6,0,Math.PI*2); ctx.fill();
+  }
+}
+/* background dots condense toward the gut outline + outline strokes in (post-S2)
+   `fade` (0–1) fades the whole silhouette back out (used to clear it before S3b) */
+function drawGutCondense(prog, t, fade=1){
+  buildGutSlots();                                  // ensure slots are ready
+  const eased=ease(prog);
+
+  // 1. condensing background field dots → outline slots
+  const padX=W*0.08, padY=H*0.10, gw=W-padX*2, gh=H-padY*2;
+  const K=outlineSlots.length;
+  if(K>0){
+    for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){
+      const ox=padX+gw*i/(COLS-1);
+      const oy=padY+gh*j/(ROWS-1);
+      if(gutInside(ox,oy)) continue;                // interior grid dots stay put
+      const slot=outlineSlots[(j*COLS+i)%K];
+      const x=ox+(slot.x-ox)*eased;
+      const y=oy+(slot.y-oy)*eased;
+      const alpha=0.5*(1-prog*0.3)*fade;            // subtle fade as they arrive
+      ctx.fillStyle=`rgba(170,170,170,${alpha})`;
+      ctx.beginPath(); ctx.arc(x,y,1.6,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  // 2. gut outline — isolated dots (no connecting line), revealed sequentially
+  if(prog>0.3 && K>1){
+    const drawFrac=Math.min(1,(prog-0.3)/0.7);
+    const drawCount=Math.max(2, Math.floor(drawFrac*K));
+    const dotAlpha=Math.min(0.7, drawFrac*0.7)*fade;
+    ctx.fillStyle=`rgba(200,185,185,${dotAlpha})`;
+    for(let k=0;k<drawCount;k++){
+      ctx.beginPath();
+      ctx.arc(outlineSlots[k].x, outlineSlots[k].y, 4.5, 0, Math.PI*2);
+      ctx.fill();
+    }
   }
 }
 function drawIsoFloor(alpha){
@@ -544,19 +649,34 @@ function updateParticles(t){
       }
       p.ty += Math.sin(t*p.spd+p.ph)*1.5*a;
     }
-    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis */
+    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis (+ condense) */
       const u=seg(p0, SEC.s2[0], SEC.s2[1]);
       const a=ease(Math.min(1,u/0.5));
       const ct=axisTarget(p, idx);
       const from=circleTarget(p, idx);
       p.tx=from.x+(ct.x-from.x)*a; p.ty=from.y+(ct.y-from.y)*a;
       p.tx+=Math.cos(t*p.spd+p.ph)*1.4; p.ty+=Math.sin(t*p.spd+p.ph)*1.4;
+
+      // condense glyphs into the gut interior during the transition window
+      const condenseProg=seg(p0, 0.435, 0.515);
+      if(condenseProg>0){
+        const intCount=interiorSlots.length;
+        if(intCount>0){
+          // ALL particles flow into interior slots (outline is drawn as separate dots)
+          const slot=interiorSlots[idx % intCount];
+          const ce=ease(condenseProg);
+          p.tx=p.tx+(slot.x-p.tx)*ce;
+          p.ty=p.ty+(slot.y-p.ty)*ce;
+          forceGlyph=true;                       // flowers fill the gut
+        } else {
+          targetAlpha=1-ease(condenseProg);
+        }
+      }
     }
     else if(p0 < SEC.s3b[1]){                 /* S3 — gut: bloom then decay */
-      const isOutline = idx < outlineSlots.length;
+      const isOutline = false; // all particles fill interior only; outline drawn as separate dots
       let slot;
-      if(isOutline){ slot=outlineSlots[idx]; }
-      else { const ii=(idx-outlineSlots.length)%Math.max(1,interiorSlots.length); slot=interiorSlots[ii]||{x:p.x,y:p.y}; }
+      const ii=idx%Math.max(1,interiorSlots.length); slot=interiorSlots[ii]||{x:p.x,y:p.y};
       // morph in from axis at start of s3a
       const u3a=seg(p0, SEC.s3a[0], SEC.s3a[1]);
       const a=ease(Math.min(1,u3a/0.7));
@@ -564,14 +684,17 @@ function updateParticles(t){
       p.tx=from.x+(slot.x-from.x)*a; p.ty=from.y+(slot.y-from.y)*a;
       if(!isOutline){
         forceGlyph=true;                       // interior always flowers
-        // decay during s3b
+        // decay during s3b — microbiome loss during menopause
         if(p0>=SEC.s3b[0]){
-          const d=seg(p0, SEC.s3b[0], SEC.s3b[1]);
-          if(d > p.dieAt*0.85){
-            const local=Math.min(1,(d - p.dieAt*0.85)/0.25);
-            targetGray=Math.min(1, local*1.4);
-            targetAlpha=1-local;
-          }
+          const d = seg(p0, SEC.s3b[0], SEC.s3b[1]);
+
+          // Phase 1: ALL glyphs quickly desaturate to gray
+          targetGray = ease(seg(d, 0.0, 0.15));
+
+          // Phase 2: ALL glyphs then disappear, staggered by dieAt hash.
+          // latest leaver gone by ~d=0.35 (≈ p0 0.548), clearing the gut.
+          const startStagger = 0.08 + p.dieAt * 0.16;   // 0.08 – 0.24
+          targetAlpha = 1 - ease(seg(d, startStagger, startStagger + 0.10));
         }
       }
     }
@@ -628,7 +751,7 @@ function updateParticles(t){
 function drawGutBlocks(){
   const d=seg(scrollProgress, SEC.s3b[0], SEC.s3b[1]);
   if(d<=0.02) return;
-  const g=gutGeom();
+  const g=gutBounds();
   const cols=9, tile=g.R*0.115, baseY=g.cy+g.R*g.sy*0.62;
   for(let i=0;i<cols;i++){
     const fx=(i+0.5)/cols;                       // 0..1 across
@@ -653,6 +776,170 @@ const _tileCache={};
 function buildTileCached(ci,ink,pat){
   const k=ci+'-'+ink+'-'+pat;
   return _tileCache[k]||(_tileCache[k]=buildTile(ci,ink,pat));
+}
+
+/* ── S3b Block Field — 3D isometric cubes that grow up on a diamond grid ── */
+const BLOCK_GCOLS = 11, BLOCK_GROWS = 11;
+// Pre-generate block data once (deterministic)
+const BLOCK_FIELD = (function(){
+  const blocks = [];
+  const GCOLS = BLOCK_GCOLS, GROWS = BLOCK_GROWS;
+  const maxDist = (GCOLS-1)/2 + 0.5;
+  for(let row = 0; row < GROWS; row++){
+    for(let col = 0; col < GCOLS; col++){
+      // diamond mask: keep if manhattan-ish distance from center is within range
+      const dc = Math.abs(col - (GCOLS-1)/2);
+      const dr = Math.abs(row - (GROWS-1)/2);
+      if(dc + dr > maxDist) continue;
+
+      const h = hash2(col + 40, row + 40);
+      const h2 = hash2(col + 80, row + 10);
+      const h3 = hash2(col + 20, row + 60);
+
+      // ~15% of cells are empty gaps for a looser, spread-out look
+      if(h3 < 0.14) continue;
+
+      // size: mix of small, medium, large — skewed toward small/medium
+      const sizeRoll = h2;
+      let sizeClass;
+      if(sizeRoll < 0.30) sizeClass = 0;       // tiny  30%
+      else if(sizeRoll < 0.58) sizeClass = 1;  // small 28%
+      else if(sizeRoll < 0.80) sizeClass = 2;  // medium 22%
+      else if(sizeRoll < 0.94) sizeClass = 3;  // large 14%
+      else sizeClass = 4;                       // xlarge 6%
+
+      const sizeFactors = [0.34, 0.58, 0.85, 1.15, 1.5];
+      const sizeFactor = sizeFactors[sizeClass];
+
+      blocks.push({
+        col, row,
+        ci: Math.floor(h * 8) % 8,       // color index into PALETTE
+        sizeFactor,
+        // small random offset so blocks don't sit on a perfect grid
+        jx: (hash2(col+5, row+95) - 0.5) * 0.30,
+        jy: (hash2(col+55, row+5) - 0.5) * 0.22,
+        // staggered grow order (0 = grows first): center-out, with jitter
+        gOrder: Math.min(1, (dc+dr)/maxDist * 0.7 + h * 0.3),
+      });
+    }
+  }
+  return blocks;
+})();
+
+// Shared isometric layout — used by BOTH the diamond grid dots and the cubes,
+// so the cubes land exactly on the grid. Spacing is decoupled from cube size
+// so blocks can be spread out without growing larger.
+function blockLayout(){
+  const cubeUnit = Math.min(W, H) * 0.052;     // cube footprint size
+  const spacing  = cubeUnit * 1.95;            // gap between cube centers (spread out)
+  const isoAngle = Math.PI / 6;                // 30°
+  const cs = Math.cos(isoAngle), sn = Math.sin(isoAngle);
+  return {
+    cubeUnit, spacing,
+    // spacing axes → grid positions
+    sax: cs*spacing,  say: sn*spacing,
+    sbx:-cs*spacing,  sby: sn*spacing,
+    // cube footprint axes
+    ax: cs*cubeUnit,  ay: sn*cubeUnit,
+    bx:-cs*cubeUnit,  by: sn*cubeUnit,
+    vertH: cubeUnit * 1.05,
+    originX: W*0.5, originY: H*0.52,
+    centerCol:(BLOCK_GCOLS-1)/2, centerRow:(BLOCK_GROWS-1)/2
+  };
+}
+function blockBasePos(blk, L){
+  const gc = blk.col - L.centerCol + blk.jx;
+  const gr = blk.row - L.centerRow + blk.jy;
+  return { x: L.originX + gc*L.sax + gr*L.sbx, y: L.originY + gc*L.say + gr*L.sby };
+}
+
+// The silhouette dots migrate from the J-outline into the diamond grid.
+function drawDiamondGrid(formProg, fadeOut, t){
+  buildGutSlots();
+  const L = blockLayout();
+  const K = outlineSlots.length;
+  const e = ease(formProg);
+  for(let n=0; n<BLOCK_FIELD.length; n++){
+    const blk = BLOCK_FIELD[n];
+    const to = blockBasePos(blk, L);
+    const from = K>0 ? outlineSlots[n % K] : to;
+    const x = from.x + (to.x - from.x)*e;
+    const y = from.y + (to.y - from.y)*e;
+    const a = Math.min(0.7, formProg*0.9) * fadeOut;
+    if(a<=0.01) continue;
+    ctx.fillStyle=`rgba(200,185,185,${a})`;
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+// Cubes extrude upward: footprint stays put on the grid, height grows with scroll.
+function drawBlockField(growProg, alpha, t){
+  if(alpha <= 0.01) return;
+  const L = blockLayout();
+  const sorted = [...BLOCK_FIELD].sort((a, b) => (a.row + a.col) - (b.row + b.col));
+
+  for(const blk of sorted){
+    // per-block staggered growth (center grows first)
+    const localGrow = seg(growProg, blk.gOrder*0.5, blk.gOrder*0.5 + 0.5);
+    const growE = easeOut(localGrow);
+    if(growE <= 0.001) continue;
+
+    const floatY = Math.sin(t * 0.7 + blk.col * 0.8 + blk.row * 0.5) * 1.8;
+    const base = blockBasePos(blk, L);
+    const bsx = base.x, bsy = base.y + floatY;
+
+    // footprint scaled by sizeFactor (constant); height grows with scroll
+    const s = blk.sizeFactor;
+    const tax = L.ax*s, tay = L.ay*s;
+    const tbx = L.bx*s, tby = L.by*s;
+    const tvH = L.vertH * s * growE;          // <-- height increases as people scroll
+
+    // the 4 top face corners (diamond), lifted by current height
+    const top = [
+      { x: bsx,             y: bsy - tvH },                 // apex (top)
+      { x: bsx + tax,       y: bsy + tay - tvH },           // right
+      { x: bsx + tax + tbx, y: bsy + tay + tby - tvH },     // front
+      { x: bsx + tbx,       y: bsy + tby - tvH },           // left
+    ];
+
+    const c = PAL_RGB[blk.ci];
+    ctx.globalAlpha = alpha;
+
+    // right face (mid tone)
+    const rightMid = mix(c, 0.15, [0, 0, 0]);
+    ctx.fillStyle = rgbStr(rightMid[0], rightMid[1], rightMid[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[1].x, top[1].y);
+    ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[2].x, top[2].y + tvH);
+    ctx.lineTo(top[1].x, top[1].y + tvH);
+    ctx.closePath();
+    ctx.fill();
+
+    // left face (darkest)
+    const leftDark = mix(c, 0.30, [0, 0, 0]);
+    ctx.fillStyle = rgbStr(leftDark[0], leftDark[1], leftDark[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[3].x, top[3].y);
+    ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[2].x, top[2].y + tvH);
+    ctx.lineTo(top[3].x, top[3].y + tvH);
+    ctx.closePath();
+    ctx.fill();
+
+    // top face (lightest) — drawn last so it sits on top
+    const topBright = mix(c, 0.45, [255, 255, 255]);
+    ctx.fillStyle = rgbStr(topBright[0], topBright[1], topBright[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[0].x, top[0].y);
+    ctx.lineTo(top[1].x, top[1].y);
+    ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[3].x, top[3].y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 1;
 }
 
 /* garden (S5) */
@@ -717,14 +1004,26 @@ function frame(){
 
   // background lattice crossfades
   const lineA = 1-seg(p0, SEC.s1[0]+0.04, SEC.s2[0]);          // lines fade out through S1
-  const dotA  = seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4c[0]-0.01, SEC.s4c[0]+0.03));
+  const condenseProg = seg(p0, 0.435, 0.515);
+  const dotA  = seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03)
+              * (1-seg(p0, SEC.s4c[0]-0.01, SEC.s4c[0]+0.03))
+              * (1-condenseProg);                              // fade out as condensation starts
   const isoA  = seg(p0, SEC.s4c[0]+0.005, SEC.s4c[1]) * (p0>SEC.s6[0]? 1-seg(p0,SEC.s6[0]+0.03,1)*0.55 : 1);
+
+  // J-shape stomach silhouette fades out as it hands off to the diamond grid
+  const condenseFade = 1 - seg(p0, 0.515, 0.542);
+  // S3b choreography: glyphs gone → J dots form a diamond grid → cubes grow up
+  const diamondForm = seg(p0, 0.542, 0.572);     // outline dots migrate into the grid
+  const diamondFade = 1 - seg(p0, 0.565, 0.595); // grid dots fade as cubes rise over them
+  const blockGrow   = seg(p0, 0.560, 0.600);     // cubes extrude upward
 
   if(lineA>0.01){
     const wave = seg(p0, SEC.s1[0], SEC.s1[0]+0.06)*(1-seg(p0,SEC.s1[0]+0.08,SEC.s2[0]));
     ctx.globalAlpha=lineA; drawGridLines(p0,t,wave); ctx.globalAlpha=1;
   }
   if(dotA>0.01) drawGridDots(dotA);
+  if(condenseProg>0.01 && condenseFade>0.01) drawGutCondense(condenseProg, t, condenseFade);
+  if(diamondForm>0.01 && diamondFade>0.01) drawDiamondGrid(diamondForm, diamondFade, t);
   if(isoA>0.01) drawIsoFloor(isoA);
 
   const phase=updateParticles(t);
@@ -741,7 +1040,11 @@ function frame(){
     }
   }
 
-  if(p0>=SEC.s3b[0] && p0<SEC.s4a[0]) drawGutBlocks();
+  // 3D isometric cubes grow up on the diamond grid during S3b
+  if(blockGrow>0 && p0<SEC.s4a[0]){
+    const blockA = 1 - seg(p0, SEC.s4a[0]-0.012, SEC.s4a[0]);
+    if(blockA>0.01) drawBlockField(blockGrow, blockA, t);
+  }
   drawGarden(t);
 
   // axis hover leader line
