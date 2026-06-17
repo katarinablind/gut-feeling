@@ -153,9 +153,9 @@ are invisible.</div>
     <div class="t mono" data-in="0.405" data-out="0.435" style="bottom:14%; right:6%; text-align:right;">what the science says: ~90% of serotonin is produced in the gut. gut microbes help regulate its production.</div>
 
     <!-- S3 -->
-    <div class="t lg" data-in="0.448" data-out="0.598" style="top:9%; left:6%;">during menopause,
+    <div class="t lg" data-in="0.448" data-out="0.540" style="top:9%; left:6%;">during menopause,
 they become hard to read.</div>
-    <div class="t md" data-in="0.540" data-out="0.598" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
+    <div class="t md" data-in="0.555" data-out="0.598" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
 
     <!-- S4 -->
     <div class="t lg tc work" data-in="0.612" data-out="0.652">“you’re too emotional”</div>
@@ -213,14 +213,14 @@ const TOTAL_VH = 9.2;
 
 /* ---------- palette ---------- */
 const PALETTE = [
-  '#76B947', // spring leaf
-  '#E67E22', // terracotta
-  '#F1A7C1', // blossom pink
-  '#F4D03F', // sunny yellow
-  '#6EB5D9', // sky blue
-  '#3D7A35', // forest green
-  '#C49AE0', // lavender
-  '#E8916A'  // warm coral
+  '#7CB342', // spring leaf green
+  '#2E7D4F', // forest green
+  '#C75D3C', // terracotta
+  '#E8775A', // warm coral
+  '#E89BB4', // blossom pink
+  '#9B8BC4', // lavender
+  '#F2C14E', // sunny yellow
+  '#5DA6C9'  // sky blue
 ];
 function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255, n>>8&255, n&255]; }
 function rgbStr(r,g,b,a){ return `rgba(${r|0},${g|0},${b|0},${a===undefined?1:a})`; }
@@ -437,7 +437,7 @@ function buildGarden(){
           const a=Math.floor(hash2(gx+3,gy+8)*PALETTE.length);
           let b=(a+2+Math.floor(hash2(gx+11,gy+4)*4))%PALETTE.length;
           if(b===a) b=(b+3)%PALETTE.length;
-          if(PALETTE[b]==='#76B947'||PALETTE[b]==='#3D7A35') b=(b+2)%PALETTE.length;
+          if(PALETTE[b]==='#7CB342'||PALETTE[b]==='#2E7D4F') b=(b+2)%PALETTE.length;
           return b;
         })(),
         order: d + hash2(gx+1,gy+1)*1.2,
@@ -488,11 +488,44 @@ function drawGridLines(p, t, wave){
   }
 }
 function drawGridDots(alpha){
-  ctx.fillStyle=`rgba(118,185,71,${0.38*alpha})`;
+  ctx.fillStyle=`rgba(170,170,170,${0.5*alpha})`;
   const padX=W*0.08, padY=H*0.10, gw=W-padX*2, gh=H-padY*2;
   for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){
     const x=padX+gw*i/(COLS-1), y=padY+gh*j/(ROWS-1);
     ctx.beginPath(); ctx.arc(x,y,1.6,0,Math.PI*2); ctx.fill();
+  }
+}
+/* background dots condense toward the gut outline + outline strokes in (post-S2) */
+function drawGutCondense(prog, t, fade=1){
+  buildGutSlots();
+  const eased=ease(prog);
+  const padX=W*0.08, padY=H*0.10, gw=W-padX*2, gh=H-padY*2;
+  const K=outlineSlots.length;
+  if(K>0){
+    for(let j=0;j<ROWS;j++){
+      for(let i=0;i<COLS;i++){
+        const ox=padX+gw*i/(COLS-1);
+        const oy=padY+gh*j/(ROWS-1);
+        if(gutInside(ox,oy)) continue;
+        const slot=outlineSlots[(j*COLS+i)%K];
+        const x=ox+(slot.x-ox)*eased;
+        const y=oy+(slot.y-oy)*eased;
+        const alpha=0.5*(1-prog*0.3)*fade;
+        ctx.fillStyle=`rgba(170,170,170,${alpha})`;
+        ctx.beginPath(); ctx.arc(x,y,1.6,0,Math.PI*2); ctx.fill();
+      }
+    }
+  }
+  if(prog>0.3 && K>1){
+    const drawFrac=Math.min(1,(prog-0.3)/0.7);
+    const drawCount=Math.max(2, Math.floor(drawFrac*K));
+    const dotAlpha=Math.min(0.7, drawFrac*0.7)*fade;
+    ctx.fillStyle=`rgba(200,185,185,${dotAlpha})`;
+    for(let k=0;k<drawCount;k++){
+      ctx.beginPath();
+      ctx.arc(outlineSlots[k].x, outlineSlots[k].y, 4.5, 0, Math.PI*2);
+      ctx.fill();
+    }
   }
 }
 
@@ -737,7 +770,7 @@ function updateParticles(t){
     const p=P[idx];
 
     // default visuals
-    let targetAlpha=1, targetGray=0, sizeMul=1;
+    let targetAlpha=1, targetGray=0, sizeMul=1, forceGlyph=false;
     let snapRain=false;
 
     if(p0 < SEC.s1[0]){                       /* S0 — grid */
@@ -757,34 +790,41 @@ function updateParticles(t){
       }
       p.ty += Math.sin(t*p.spd+p.ph)*1.5*a;
     }
-    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis */
+    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis (+ condense) */
       const u=seg(p0, SEC.s2[0], SEC.s2[1]);
       const a=ease(Math.min(1,u/0.5));
       const ct=axisTarget(p, idx);
       const from=circleTarget(p, idx);
       p.tx=from.x+(ct.x-from.x)*a; p.ty=from.y+(ct.y-from.y)*a;
       p.tx+=Math.cos(t*p.spd+p.ph)*1.4; p.ty+=Math.sin(t*p.spd+p.ph)*1.4;
+
+      const condenseProg=seg(p0, 0.435, 0.515);
+      if(condenseProg>0){
+        const intCount=interiorSlots.length;
+        if(intCount>0){
+          const slot=interiorSlots[idx % intCount];
+          const ce=ease(condenseProg);
+          p.tx=p.tx+(slot.x-p.tx)*ce;
+          p.ty=p.ty+(slot.y-p.ty)*ce;
+          forceGlyph=true;
+        } else {
+          targetAlpha=1-ease(condenseProg);
+        }
+      }
     }
     else if(p0 < SEC.s3b[1]){                 /* S3 — gut: bloom then decay */
-      const isOutline = idx < outlineSlots.length;
-      let slot;
-      if(isOutline){ slot=outlineSlots[idx]; }
-      else { const ii=(idx-outlineSlots.length)%Math.max(1,interiorSlots.length); slot=interiorSlots[ii]||{x:p.x,y:p.y}; }
-      // morph in from axis at start of s3a
+      const ii=idx%Math.max(1,interiorSlots.length);
+      const slot=interiorSlots[ii]||{x:p.x,y:p.y};
       const u3a=seg(p0, SEC.s3a[0], SEC.s3a[1]);
       const a=ease(Math.min(1,u3a/0.7));
       const from=axisTarget(p, idx);
       p.tx=from.x+(slot.x-from.x)*a; p.ty=from.y+(slot.y-from.y)*a;
-      if(!isOutline){
-        // decay during s3b
-        if(p0>=SEC.s3b[0]){
-          const d=seg(p0, SEC.s3b[0], SEC.s3b[1]);
-          if(d > p.dieAt*0.85){
-            const local=Math.min(1,(d - p.dieAt*0.85)/0.25);
-            targetGray=Math.min(1, local*1.4);
-            targetAlpha=1-local;
-          }
-        }
+      forceGlyph=true;
+      if(p0>=SEC.s3b[0]){
+        const d=seg(p0, SEC.s3b[0], SEC.s3b[1]);
+        targetGray=ease(seg(d, 0.0, 0.48));
+        const startStagger=0.30+p.dieAt*0.28;
+        targetAlpha=1-ease(seg(d, startStagger, startStagger+0.15));
       }
     }
     else if(inStorm){                         /* S4 — storm / freeze / rain */
@@ -813,6 +853,7 @@ function updateParticles(t){
     p.alpha += (targetAlpha-p.alpha)*0.12;
     p.gray += (targetGray-p.gray)*0.12;
     p.size += (sizeMul-p.size)*0.15;
+    p._forceGlyph=forceGlyph;
 
     if(p0<SEC.s4a[0]){
       stormSessionT0=null;
@@ -824,35 +865,123 @@ function updateParticles(t){
   return phase;
 }
 
-/* gut interior blocks (S3B) */
-function drawGutBlocks(){
-  const d=seg(scrollProgress, SEC.s3b[0], SEC.s3b[1]);
-  if(d<=0.02) return;
-  const g=gutGeom();
-  const cols=9, tile=g.R*0.115, baseY=g.cy+g.R*g.sy*0.62;
-  for(let i=0;i<cols;i++){
-    const fx=(i+0.5)/cols;                       // 0..1 across
-    const x=g.cx-g.R*0.7 + fx*g.R*1.4;
-    const hFac=0.4+hash2(i+1,7)*1.0;
-    const grow=ease(Math.min(1, (d - 0.1 - i*0.02)/0.6));
-    if(grow<=0) continue;
-    const stack=Math.round(grow*hFac*6);
-    for(let s=0;s<stack;s++){
-      const y=baseY - s*tile*0.92;
-      if(!gutInside(x,y)) continue;
-      const ci=(i+s)%PALETTE.length, ink=(i+s+4)%PALETTE.length;
-      const pat=TILE_PATTERNS[(i*3+s)%TILE_PATTERNS.length];
-      const spr=buildTileCached(ci,ink,pat);
-      ctx.globalAlpha=Math.min(1, grow*1.2);
-      ctx.drawImage(spr, x-tile/2, y-tile/2, tile, tile);
+/* ── S3b Block Field — 3D isometric cubes that grow up on a diamond grid ── */
+const BLOCK_GCOLS = 11, BLOCK_GROWS = 11;
+const BLOCK_FIELD = (function(){
+  const blocks = [];
+  const GCOLS = BLOCK_GCOLS, GROWS = BLOCK_GROWS;
+  const maxDist = (GCOLS-1)/2 + 0.5;
+  for(let row = 0; row < GROWS; row++){
+    for(let col = 0; col < GCOLS; col++){
+      const dc = Math.abs(col - (GCOLS-1)/2);
+      const dr = Math.abs(row - (GROWS-1)/2);
+      if(dc + dr > maxDist) continue;
+      const h = hash2(col + 40, row + 40);
+      const h2 = hash2(col + 80, row + 10);
+      const h3 = hash2(col + 20, row + 60);
+      if(h3 < 0.14) continue;
+      const sizeRoll = h2;
+      let sizeClass;
+      if(sizeRoll < 0.30) sizeClass = 0;
+      else if(sizeRoll < 0.58) sizeClass = 1;
+      else if(sizeRoll < 0.80) sizeClass = 2;
+      else if(sizeRoll < 0.94) sizeClass = 3;
+      else sizeClass = 4;
+      const sizeFactors = [0.34, 0.58, 0.85, 1.15, 1.5];
+      blocks.push({
+        col, row,
+        ci: Math.floor(h * 8) % 8,
+        sizeFactor: sizeFactors[sizeClass],
+        jx: (hash2(col+5, row+95) - 0.5) * 0.30,
+        jy: (hash2(col+55, row+5) - 0.5) * 0.22,
+        gOrder: Math.min(1, (dc+dr)/maxDist * 0.7 + h * 0.3),
+      });
     }
   }
-  ctx.globalAlpha=1;
+  return blocks;
+})();
+
+function blockLayout(){
+  const cubeUnit = Math.min(W, H) * 0.052;
+  const spacing  = cubeUnit * 1.95;
+  const isoAngle = Math.PI / 6;
+  const cs = Math.cos(isoAngle), sn = Math.sin(isoAngle);
+  return {
+    cubeUnit, spacing,
+    sax: cs*spacing,  say: sn*spacing,
+    sbx:-cs*spacing,  sby: sn*spacing,
+    ax: cs*cubeUnit,  ay: sn*cubeUnit,
+    bx:-cs*cubeUnit,  by: sn*cubeUnit,
+    vertH: cubeUnit * 1.05,
+    originX: W*0.5, originY: H*0.52,
+    centerCol:(BLOCK_GCOLS-1)/2, centerRow:(BLOCK_GROWS-1)/2
+  };
 }
-const _tileCache={};
-function buildTileCached(ci,ink,pat){
-  const k=ci+'-'+ink+'-'+pat;
-  return _tileCache[k]||(_tileCache[k]=buildTile(ci,ink,pat));
+function blockBasePos(blk, L){
+  const gc = blk.col - L.centerCol + blk.jx;
+  const gr = blk.row - L.centerRow + blk.jy;
+  return { x: L.originX + gc*L.sax + gr*L.sbx, y: L.originY + gc*L.say + gr*L.sby };
+}
+function drawDiamondGrid(formProg, fadeOut, t){
+  buildGutSlots();
+  const L = blockLayout();
+  const K = outlineSlots.length;
+  const e = ease(formProg);
+  for(let n=0; n<BLOCK_FIELD.length; n++){
+    const blk = BLOCK_FIELD[n];
+    const to = blockBasePos(blk, L);
+    const from = K>0 ? outlineSlots[n % K] : to;
+    const x = from.x + (to.x - from.x)*e;
+    const y = from.y + (to.y - from.y)*e;
+    const a = Math.min(0.7, formProg*0.9) * fadeOut;
+    if(a<=0.01) continue;
+    ctx.fillStyle=`rgba(200,185,185,${a})`;
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI*2); ctx.fill();
+  }
+}
+function drawBlockField(growProg, alpha, t){
+  if(alpha <= 0.01) return;
+  const L = blockLayout();
+  const sorted = [...BLOCK_FIELD].sort((a, b) => (a.row + a.col) - (b.row + b.col));
+  for(const blk of sorted){
+    const localGrow = seg(growProg, blk.gOrder*0.35, blk.gOrder*0.35 + 0.65);
+    const growE = ease(localGrow);
+    if(growE <= 0.001) continue;
+    const floatY = Math.sin(t * 0.7 + blk.col * 0.8 + blk.row * 0.5) * 1.8;
+    const base = blockBasePos(blk, L);
+    const bsx = base.x, bsy = base.y + floatY;
+    const s = blk.sizeFactor;
+    const tax = L.ax*s, tay = L.ay*s;
+    const tbx = L.bx*s, tby = L.by*s;
+    const tvH = L.vertH * s * growE;
+    const top = [
+      { x: bsx,             y: bsy - tvH },
+      { x: bsx + tax,       y: bsy + tay - tvH },
+      { x: bsx + tax + tbx, y: bsy + tay + tby - tvH },
+      { x: bsx + tbx,       y: bsy + tby - tvH },
+    ];
+    const c = PAL_RGB[blk.ci];
+    ctx.globalAlpha = alpha;
+    const rightMid = mix(c, 0.15, [0, 0, 0]);
+    ctx.fillStyle = rgbStr(rightMid[0], rightMid[1], rightMid[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[1].x, top[1].y); ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[2].x, top[2].y + tvH); ctx.lineTo(top[1].x, top[1].y + tvH);
+    ctx.closePath(); ctx.fill();
+    const leftDark = mix(c, 0.30, [0, 0, 0]);
+    ctx.fillStyle = rgbStr(leftDark[0], leftDark[1], leftDark[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[3].x, top[3].y); ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[2].x, top[2].y + tvH); ctx.lineTo(top[3].x, top[3].y + tvH);
+    ctx.closePath(); ctx.fill();
+    const topBright = mix(c, 0.45, [255, 255, 255]);
+    ctx.fillStyle = rgbStr(topBright[0], topBright[1], topBright[2]);
+    ctx.beginPath();
+    ctx.moveTo(top[0].x, top[0].y); ctx.lineTo(top[1].x, top[1].y);
+    ctx.lineTo(top[2].x, top[2].y); ctx.lineTo(top[3].x, top[3].y);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 
 function gardenLiveState(g, t){
@@ -955,11 +1084,16 @@ function frame(){
 
   // background lattice crossfades
   const lineA = 1-seg(p0, SEC.s1[0]+0.04, SEC.s2[0]);
-  const dotA  = p0>=SEC.s4a[0] ? 0 : seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0]));
+  const condenseProg = seg(p0, 0.435, 0.515);
+  const dotA  = p0>=SEC.s4a[0] ? 0 : seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0])) * (1-condenseProg);
   const rp=rainProgress(t, p0);
   const stormDark=stormBgDark(p0, rp);
   const isoBase = p0>=SEC.s4r[0] ? ease(Math.min(1, rp*1.2)) : 0;
   const isoA = isoBase * (1-gardenView.zoomT*0.88);
+  const condenseFade = 1 - seg(p0, 0.512, 0.538);
+  const diamondForm = seg(p0, 0.532, 0.556);
+  const diamondFade = 1 - seg(p0, 0.560, 0.590);
+  const blockGrow   = seg(p0, 0.552, 0.600);
 
   drawStormBg(stormDark, p0);
   document.getElementById('copy').classList.toggle('storm-dark', stormDark>0.32);
@@ -969,6 +1103,8 @@ function frame(){
     ctx.globalAlpha=lineA; drawGridLines(p0,t,wave); ctx.globalAlpha=1;
   }
   if(dotA>0.01) drawGridDots(dotA);
+  if(condenseProg>0.01 && condenseFade>0.01) drawGutCondense(condenseProg, t, condenseFade);
+  if(diamondForm>0.01 && diamondFade>0.01) drawDiamondGrid(diamondForm, diamondFade, t);
 
   const phase=updateParticles(t);
 
@@ -996,7 +1132,10 @@ function frame(){
     ctx.fillRect(0, top, W, H-top);
   }
 
-  if(p0>=SEC.s3b[0] && p0<SEC.s4a[0]) drawGutBlocks();
+  if(p0>=SEC.s3b[0] && p0<SEC.s4a[0]){
+    const blockA = 1 - seg(p0, SEC.s4a[0]-0.012, SEC.s4a[0]);
+    if(blockGrow>0 && blockA>0.01) drawBlockField(blockGrow, blockA, t);
+  }
   drawGarden(t);
 
   // axis hover leader line
