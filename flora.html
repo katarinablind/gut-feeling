@@ -688,13 +688,13 @@ function updateParticles(t){
         if(p0>=SEC.s3b[0]){
           const d = seg(p0, SEC.s3b[0], SEC.s3b[1]);
 
-          // Phase 1: ALL glyphs quickly desaturate to gray
-          targetGray = ease(seg(d, 0.0, 0.15));
+          // Phase 1: ALL glyphs very slowly desaturate to gray (long, gradual drain)
+          targetGray = ease(seg(d, 0.0, 0.48));
 
-          // Phase 2: ALL glyphs then disappear, staggered by dieAt hash.
-          // latest leaver gone by ~d=0.35 (≈ p0 0.548), clearing the gut.
-          const startStagger = 0.08 + p.dieAt * 0.16;   // 0.08 – 0.24
-          targetAlpha = 1 - ease(seg(d, startStagger, startStagger + 0.10));
+          // Phase 2: ALL glyphs then disappear, staggered by dieAt across a wide
+          // window so they visibly thin out one by one before the gut clears.
+          const startStagger = 0.30 + p.dieAt * 0.28;   // 0.30 – 0.58
+          targetAlpha = 1 - ease(seg(d, startStagger, startStagger + 0.15));
         }
       }
     }
