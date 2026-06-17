@@ -71,6 +71,27 @@
     max-width:360px;
   }
   .t.work.sm.show{ transform:translate(-50%,0); }
+  .t.end-hero{
+    left:0;
+    right:0;
+    width:100%;
+    top:calc(17% + 40px);
+    transform:translateY(8px);
+    text-align:center;
+    white-space:normal;
+    max-width:none;
+    padding:0 6vw;
+    background:linear-gradient(155deg, #2a5224 0%, #3d7a35 42%, #5c9a48 72%, #76b947 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .t.end-hero.show{ transform:translateY(0); }
+  #copy.storm-dark .work,
+  #copy.storm-dark .work .lg,
+  #copy.storm-dark .work .sm{
+    color:#F5F2EB;
+  }
   .lg{ font-size:clamp(32px,4.5vw,64px); font-weight:300; letter-spacing:-0.01em; }
   .md{ font-size:clamp(15px,1.7vw,21px); font-weight:400; }
   .sm{ font-size:clamp(13px,1.4vw,18px); font-weight:400; color:#444444; }
@@ -138,7 +159,7 @@ they become hard to read.</div>
 
     <!-- S4 -->
     <div class="t lg tc work" data-in="0.612" data-out="0.652">“you’re too emotional”</div>
-    <div class="t tc work" data-in="0.662" data-out="0.705">
+    <div class="t tc work" data-in="0.662" data-out="0.728">
       <div class="lg" style="font-size:clamp(22px,2.6vw,34px); line-height:1.16;">over time ,
 many women stop
 trusting themselves .</div>
@@ -146,11 +167,19 @@ trusting themselves .</div>
     </div>
 
     <!-- S5 -->
-    <div class="t lg work" data-in="0.790" data-out="0.915" style="top:10%; right:7%; text-align:right;">your body has always
+    <div class="t lg work" data-in="0.835" data-out="0.892" data-zoom-fade style="top:10%; right:7%; text-align:right;">your body has always
 been speaking ;</div>
+    <div class="t lg work" data-in="0.928" data-out="0.958" style="top:12%; left:7%; text-align:left;">take care of
+your gut ;</div>
+    <div class="t lg work" data-in="0.942" data-out="0.972" data-zoom-fade style="bottom:24%; right:7%; text-align:right;">so you can
+listen to it ;</div>
+    <div class="t lg work end-hero" data-in="0.978" data-out="1.01" data-zoom-reveal="0.78">and learn to trust
+your gut feeling .</div>
 
     <!-- S6 -->
-    <div class="t sm work" data-in="0.945" data-out="1.01" style="bottom:12%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center;">we are not doctors&nbsp;♡</div>
+    <div class="t sm work" data-in="0.978" data-out="1.01" style="bottom:7%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center; max-width:min(88vw,420px);">we are not doctors ;
+please talk to your doctors
+to learn more</div>
   </div>
 
   <div id="annot"></div>
@@ -313,9 +342,20 @@ function easeInCubic(t){ return t*t*t; }
 const SEC = {
   s0:[0,.12], s1:[.12,.28], s2:[.28,.44],
   s3a:[.44,.52], s3b:[.52,.60],
-  s4a:[.60,.65], s4b:[.65,.705], s4c:[.705,.78],
-  s5a:[.78,.84], s5b:[.84,.90], s5c:[.90,.94], s6:[.94,1.0]
+  s4a:[.612,.662], s4s:[.662,.718], s4h:[.718,.738], s4r:[.738,.820],
+  s5a:[.820,.875], s5b:[.875,.925], s5c:[.925,.96], s6:[.96,1.0]
 };
+const GARDEN_LIVE_START=0.928;
+const GARDEN_ZOOM_START=0.942;
+const RAIN_DURATION=2.9;
+let stormSessionT0=null;
+let rainSessionT0=null;
+
+function rainProgress(t, p0){
+  if(p0<SEC.s4r[0]){ rainSessionT0=null; return 0; }
+  if(rainSessionT0===null) rainSessionT0=t;
+  return Math.min(1, (t-rainSessionT0)/RAIN_DURATION);
+}
 
 /* ---------- pointer ---------- */
 const pointer={x:W*0.5,y:H*0.5,active:false};
@@ -357,13 +397,27 @@ function buildGutSlots(){
 }
 
 /* ---------- isometric floor ---------- */
+let gardenView={ zoom:1, zoomT:0 };
+
+function updateGardenView(p0){
+  const zt=ease(seg(p0, GARDEN_ZOOM_START, 0.995));
+  gardenView={ zoom:1+zt*4.4, zoomT:zt };
+}
+
 function isoProject(gx,gy){
   const tileW=W*0.020, tileH=W*0.0095;
   const horizonY=H*0.56, cx=W*0.5;
   const depth=(gx+gy);
-  const sx=cx + (gx-gy)*tileW;
-  const sy=horizonY + (gx+gy)*tileH + H*0.10;
-  const scale = 0.42 + (depth+ISO_R*2)/(ISO_R*4)*0.65;
+  let sx=cx + (gx-gy)*tileW;
+  let sy=horizonY + (gx+gy)*tileH + H*0.10;
+  let scale = 0.42 + (depth+ISO_R*2)/(ISO_R*4)*0.65;
+  const z=gardenView.zoom;
+  if(z>1.001){
+    const pcx=W*0.5, pcy=H*0.5;
+    sx=pcx+(sx-pcx)*z;
+    sy=pcy+(sy-pcy)*z;
+    scale*=z;
+  }
   return {sx,sy,scale};
 }
 const ISO_R=7;
@@ -379,7 +433,14 @@ function buildGarden(){
         glyph: FLOWERS[Math.floor(hash2(gx+40,gy+40)*FLOWERS.length)],
         glyph2: FLOWERS[Math.floor(hash2(gx+90,gy+12)*FLOWERS.length)],
         ci: Math.floor(hash2(gx+3,gy+8)*PALETTE.length),
-        order: d + hash2(gx+1,gy+1)*1.2,   // sprout order ~ radial
+        ci2: (()=>{
+          const a=Math.floor(hash2(gx+3,gy+8)*PALETTE.length);
+          let b=(a+2+Math.floor(hash2(gx+11,gy+4)*4))%PALETTE.length;
+          if(b===a) b=(b+3)%PALETTE.length;
+          if(PALETTE[b]==='#76B947'||PALETTE[b]==='#3D7A35') b=(b+2)%PALETTE.length;
+          return b;
+        })(),
+        order: d + hash2(gx+1,gy+1)*1.2,
         swap: 0.2+hash2(gx+6,gy+2)*0.6
       });
     }
@@ -446,20 +507,19 @@ function isoLandingFor(idx, i, j){
   return isoProject(slot.gx, slot.gy);
 }
 
-function rainToGround(state, fx, fy, idx, i, j, t, p0){
+function rainToGround(state, fx, fy, idx, i, j, t, rainProg){
   if(!state.land) state.land=isoLandingFor(idx, i, j);
 
-  const rainD=seg(p0, SEC.s4c[0], SEC.s4c[1]);
-  const delay=hash2(i??idx, j??0)*0.38;
-  const dur=0.58;
-  const local=Math.min(1, Math.max(0, (rainD-delay)/dur));
+  const delay=hash2(i??idx, j??0)*0.32;
+  const dur=0.52;
+  const local=Math.min(1, Math.max(0, (rainProg-delay)/dur));
 
   if(local<=0) return { x:fx, y:fy, alpha:1, scale:1 };
 
   const land=state.land;
-  const xDrift=ease(Math.max(0, (local-0.12)/0.88));
+  const xDrift=ease(Math.max(0, (local-0.1)/0.9));
   const gy=easeInCubic(local);
-  const wobble=Math.sin(t*2.4+idx*0.7)*(1-gy)*5;
+  const wobble=Math.sin(t*2.2+idx*0.7)*(1-gy)*4;
   const x=fx+(land.sx-fx)*xDrift+wobble;
   const y=fy+(land.sy-fy)*gy;
   const scale=1-gy*0.42;
@@ -469,7 +529,8 @@ function rainToGround(state, fx, fy, idx, i, j, t, p0){
   return { x, y, alpha, scale, landed:local>=1 };
 }
 
-function stormMotion(state, baseX, baseY, idx, i, j, t, p0){
+function stormMotion(state, baseX, baseY, idx, i, j, t, p0, opts={}){
+  const outer=opts.outer?1.42:1;
   const {cx,cy}=stormCenter();
   const eye=stormEyeR();
   const hi=hash2(i??idx, j??0);
@@ -477,25 +538,44 @@ function stormMotion(state, baseX, baseY, idx, i, j, t, p0){
 
   if(state.sr===undefined){
     const raw=Math.hypot(baseX-cx, baseY-cy);
-    state.sr=Math.max(eye+18, raw);
+    const minR=opts.outer ? eye+36+hi*62 : eye+18;
+    state.sr=Math.max(minR, raw*(opts.outer?1.15:1));
     state.sa=Math.atan2(baseY-cy, baseX-cx);
     if(state.spin===undefined) state.spin=0.7+hi*1.1;
     if(state.drop===undefined) state.drop=0.7+hj*0.9;
   }
 
-  if(p0>=SEC.s4c[0]){
+  const rp=rainProgress(t, p0);
+  if(p0>=SEC.s4r[0] && rp>0){
     const fx=state.frozenX??baseX, fy=state.frozenY??baseY;
-    return rainToGround(state, fx, fy, idx, i, j, t, p0);
+    return rainToGround(state, fx, fy, idx, i, j, t, rp);
   }
 
-  if(p0<SEC.s4a[1]){
-    const u=seg(p0,SEC.s4a[0],SEC.s4a[1]);
-    const spin=u*4.2*state.spin;
+  const inQuote=p0<SEC.s4s[0];
+  const inStorm2=p0>=SEC.s4s[0] && p0<SEC.s4h[0];
+  const inHalt=p0>=SEC.s4h[0] && p0<SEC.s4h[1];
+
+  if(inQuote || inStorm2 || inHalt){
+    if(p0<SEC.s4h[0]) state.haltSpin=undefined;
+    if(stormSessionT0===null) stormSessionT0=t;
+    const elapsed=t-stormSessionT0;
+    const stormRate=inQuote?0.14:0.32;
+    const u=inQuote?Math.min(1, 0.28+seg(p0,SEC.s4a[0],SEC.s4a[1])*0.72):1;
+    let spin=elapsed*stormRate*state.spin;
+
+    if(inHalt){
+      if(state.haltSpin===undefined) state.haltSpin=spin;
+      const h=seg(p0,SEC.s4h[0],SEC.s4h[1]);
+      spin=state.haltSpin*(1-ease(h));
+    }
+
+    const haltEase=inHalt?seg(p0,SEC.s4h[0],SEC.s4h[1]):0;
     const ang=state.sa-spin;
-    const turb=Math.sin(t*1.6+idx)*6*u;
+    const turbMul=inQuote?1:inStorm2?1.35:1.1;
+    const turb=Math.sin(t*1.6+idx)*(opts.outer?3:5)*u*turbMul*(1-ease(haltEase)*0.85);
     const rad=Math.max(
-      eye+20+hi*52,
-      state.sr*(0.72+0.45*hi)+Math.sin(u*6+idx)*18*u
+      (eye+20+hi*52)*outer,
+      (state.sr*(0.72+0.45*hi)+Math.sin(u*6+idx)*18*u)*outer
     );
     const x=cx+Math.cos(ang)*rad+turb;
     const y=cy+Math.sin(ang)*rad*0.92+Math.cos(ang*1.3)*12*u;
@@ -506,32 +586,90 @@ function stormMotion(state, baseX, baseY, idx, i, j, t, p0){
   return { x:state.frozenX??baseX, y:state.frozenY??baseY };
 }
 
-function drawStormGridDots(t, p0, alpha){
+function stormBgDark(p0, rp){
+  const stormEnter=SEC.s4a[0]-0.022;
+  if(p0<stormEnter) return 0;
+  if(p0>=SEC.s4r[0]) return Math.max(0, 1-rp*1.08);
+
+  const part1Dark=0.64;
+  const fullDark=1;
+  const rampEnd=SEC.s4s[0]+(SEC.s4s[1]-SEC.s4s[0])*0.42;
+
+  if(p0<SEC.s4a[0])
+    return ease(seg(p0, stormEnter, SEC.s4a[0]))*part1Dark;
+
+  if(p0<SEC.s4s[0])
+    return part1Dark;
+
+  if(p0<rampEnd)
+    return part1Dark+ease(seg(p0, SEC.s4s[0], rampEnd))*(fullDark-part1Dark);
+
+  return fullDark;
+}
+
+function drawStormBg(dark, p0){
+  if(dark<=0.01) return;
+  const part2=p0>=SEC.s4s[0] && p0<SEC.s4r[0];
+  const part1=p0>=SEC.s4a[0] && p0<SEC.s4s[0];
+  const g=ctx.createRadialGradient(W*0.5,H*0.48,0, W*0.5,H*0.48, Math.max(W,H)*0.72);
+  if(part2){
+    g.addColorStop(0, `rgba(2,3,1,${dark*0.78})`);
+    g.addColorStop(1, `rgba(0,0,0,${Math.min(1, dark*0.99)})`);
+  } else if(part1){
+    g.addColorStop(0, `rgba(12,14,10,${dark*0.62})`);
+    g.addColorStop(1, `rgba(4,5,3,${Math.min(1, dark*0.94)})`);
+  } else {
+    const t=seg(dark, 0, 0.64);
+    g.addColorStop(0, `rgba(14,16,12,${t*0.58})`);
+    g.addColorStop(1, `rgba(6,7,5,${t*0.88})`);
+  }
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function drawS4GridDots(t, p0, rp){
+  if(p0<SEC.s4a[0] || p0>=SEC.s5a[0]) return;
+
   const padX=W*0.08, padY=H*0.10, gw=W-padX*2, gh=H-padY*2;
-  ctx.fillStyle='rgba(118,185,71,0.45)';
+  const blendStart=SEC.s4a[1]-0.018;
+  const blendEnd=SEC.s4s[0]+0.022;
+  const blend=p0>=blendEnd?1:p0<blendStart?0:seg(p0, blendStart, blendEnd);
+  const blendE=ease(blend);
+  const rainFade=p0>=SEC.s4r[0]?Math.max(0, 1-rp*0.92):1;
+  if(rainFade<0.01) return;
+
+  ctx.fillStyle='rgba(45,90,39,0.82)';
   for(let j=0;j<ROWS;j++){
     for(let i=0;i<COLS;i++){
       const bx=padX+gw*i/(COLS-1), by=padY+gh*j/(ROWS-1);
       const idx=j*COLS+i+500;
-      const pos=stormMotion(dotStorm[j][i], bx, by, idx, i, j, t, p0);
-      let a=alpha*(pos.alpha!==undefined ? pos.alpha : 1);
-      if(p0<SEC.s4a[1]){
-        const {cx,cy}=stormCenter();
-        const d=Math.hypot(pos.x-cx, pos.y-cy);
-        const eye=stormEyeR();
-        if(d<eye) a*=Math.max(0.12, d/eye);
+      let x=bx, y=by, r=1.6, a=0.42, pos=null;
+
+      if(blendE>0.001){
+        pos=stormMotion(dotStorm[j][i], bx, by, idx, i, j, t, p0, {outer:true});
+        x=bx+(pos.x-bx)*blendE;
+        y=by+(pos.y-by)*blendE;
+        r=1.6+(2.8-1.6)*blendE;
+        a=(0.42+(0.82-0.42)*blendE)*(pos.alpha!==undefined?pos.alpha:1);
+        if(p0<SEC.s4r[0]){
+          const {cx,cy}=stormCenter();
+          const d=Math.hypot(x-cx, y-cy);
+          const eye=stormEyeR();
+          if(d<eye+8) a*=Math.max(0.2, (d-eye)/24);
+        }
+        if(pos.scale!==undefined) r*=pos.scale;
       }
+
+      a*=rainFade;
       if(a<0.01) continue;
-      const r=1.6*(pos.scale!==undefined ? pos.scale : 1);
       ctx.globalAlpha=a;
-      ctx.beginPath(); ctx.arc(pos.x,pos.y,r,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
     }
   }
   ctx.globalAlpha=1;
 }
-function drawGroundEmergence(alpha){
+function drawGroundEmergence(alpha, rainProg){
   if(alpha<=0.01) return;
-  const rainProg=seg(scrollProgress, SEC.s4c[0], SEC.s4c[1]);
   const rise=ease(Math.min(1, rainProg*1.15));
   const top=H*0.54-(1-rise)*H*0.06;
   const grd=ctx.createLinearGradient(0, top, 0, H);
@@ -588,8 +726,11 @@ function updateParticles(t){
   buildGutSlots();
   buildGarden();
 
-  const inStorm = (p0>=SEC.s4a[0] && p0<SEC.s4c[1]);
-  const inRain = (p0>=SEC.s4c[0] && p0<SEC.s4c[1]);
+  const rp=rainProgress(t, p0);
+  const inStorm = (p0>=SEC.s4a[0] && p0<SEC.s5a[0]);
+  const inRain = (p0>=SEC.s4r[0] && rp<1);
+  const inContStorm = (p0>=SEC.s4s[0] && p0<SEC.s4h[1]);
+  const inHalt = (p0>=SEC.s4h[0] && p0<SEC.s4h[1]);
 
   // Continuously remember the pre-storm resting pos (used to seed swirl)
   for(let idx=0; idx<N; idx++){
@@ -648,14 +789,14 @@ function updateParticles(t){
     }
     else if(inStorm){                         /* S4 — storm / freeze / rain */
       const baseX=p.tx, baseY=p.ty;
-      const st={ sr:p._sr, sa:p._sa, spin:p.sSpin, drop:p.sDrop, frozenX:p._frozenX, frozenY:p._frozenY, land:p._land };
+      const st={ sr:p._sr, sa:p._sa, spin:p.sSpin, drop:p.sDrop, frozenX:p._frozenX, frozenY:p._frozenY, land:p._land, haltSpin:p._haltSpin };
       const pos=stormMotion(st, baseX, baseY, idx, p.i, p.j, t, p0);
       p.tx=pos.x; p.ty=pos.y;
-      p._sr=st.sr; p._sa=st.sa; p._frozenX=st.frozenX; p._frozenY=st.frozenY; p._land=st.land;
+      p._sr=st.sr; p._sa=st.sa; p._frozenX=st.frozenX; p._frozenY=st.frozenY; p._land=st.land; p._haltSpin=st.haltSpin;
       if(pos.alpha!==undefined) targetAlpha=pos.alpha;
       if(pos.scale!==undefined) sizeMul=pos.scale;
       if(inRain) snapRain=true;
-      else if(p0<SEC.s4a[1]){
+      else if(p0<SEC.s4r[0]){
         const {cx,cy}=stormCenter();
         const d=Math.hypot(p.tx-cx, p.ty-cy);
         const eye=stormEyeR();
@@ -666,7 +807,7 @@ function updateParticles(t){
 
     // ease toward target (the spec's lerp); storm uses tighter follow
     const stormEarly = inStorm && p0<SEC.s4a[0]+0.05;
-    const k = inRain ? 1 : inStorm ? (stormEarly ? 0.32 : 0.18) : 0.075;
+    const k = inRain ? 1 : inHalt ? 0.28 : inContStorm ? 0.28 : inStorm ? (stormEarly ? 0.30 : 0.16) : 0.075;
     if(snapRain){ p.x=p.tx; p.y=p.ty; }
     else { p.x += (p.tx-p.x)*k; p.y += (p.ty-p.y)*k; }
     p.alpha += (targetAlpha-p.alpha)*0.12;
@@ -674,7 +815,9 @@ function updateParticles(t){
     p.size += (sizeMul-p.size)*0.15;
 
     if(p0<SEC.s4a[0]){
-      p._sr=undefined; p._sa=undefined; p._frozenX=undefined; p._frozenY=undefined; p._land=undefined;
+      stormSessionT0=null;
+      rainSessionT0=null;
+      p._sr=undefined; p._sa=undefined; p._frozenX=undefined; p._frozenY=undefined; p._land=undefined; p._haltSpin=undefined;
       if(idx===0) for(let dj=0;dj<ROWS;dj++) for(let di=0;di<COLS;di++) dotStorm[dj][di]={};
     }
   }
@@ -712,12 +855,23 @@ function buildTileCached(ci,ink,pat){
   return _tileCache[k]||(_tileCache[k]=buildTile(ci,ink,pat));
 }
 
+function gardenLiveState(g, t){
+  const h=hash2(g.gx+17, g.gy+23);
+  const rate=1.15+h*1.55;
+  const beat=t*rate+g.swap*8;
+  const glyphIdx=(Math.floor(beat)+Math.floor(h*FLOWERS.length))%FLOWERS.length;
+  const colorIdx=(Math.floor(beat*0.62+g.swap*4)+g.ci)%PALETTE.length;
+  const pulse=0.92+0.08*Math.sin(t*2.4+h*6.28);
+  return { gl:FLOWERS[glyphIdx], col:PAL_RGB[colorIdx], pulse };
+}
+
 /* garden (S5) */
 function drawGarden(t){
   const p0=scrollProgress;
   if(p0<SEC.s5a[0]) return;
   const grow = seg(p0, SEC.s5a[0], SEC.s5b[1]);   // 0..1 across sprouting
   const diversity = seg(p0, SEC.s5c[0], SEC.s5c[1]);
+  const liveGut = p0>=GARDEN_LIVE_START ? 1 : 0;
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const g of gardenPts){
     // sprout when grow passes this point's normalized order
@@ -725,15 +879,26 @@ function drawGarden(t){
     const s=Math.max(0, Math.min(1, local));
     if(s<=0) continue;
     const q=isoProject(g.gx,g.gy);
-    const sz=(13+q.scale*9)*easeOut(s);
-    const c=PAL_RGB[g.ci];
-    const fade = p0>SEC.s6[0]? 1-seg(p0,SEC.s6[0],1)*0.25 : 1;
+    let sz=(13+q.scale*9)*easeOut(s);
+    const fade = gardenView.zoomT>0.1 ? 1 : (p0>SEC.s6[0]? 1-seg(p0,SEC.s6[0],1)*0.2 : 1);
     ctx.globalAlpha=easeOut(s)*fade;
     ctx.font=`${sz|0}px ${GLYPH_FONT}`;
-    ctx.fillStyle=rgbStr(c[0],c[1],c[2]);
-    // glyph swap during diversity phase
     let gl=g.glyph;
-    if(diversity>g.swap){ const sw=Math.min(1,(diversity-g.swap)/0.15); gl = sw>0.5? g.glyph2 : g.glyph; if(sw>0.4&&sw<0.6){ /* mid-swap shrink */ ctx.globalAlpha*= (Math.abs(sw-0.5)*2); } }
+    let col=PAL_RGB[g.ci];
+    if(diversity>g.swap){
+      const sw=Math.min(1,(diversity-g.swap)/0.15);
+      gl=sw>0.5? g.glyph2 : g.glyph;
+      const colT=sw>0.5?1:sw*2;
+      col=mix(PAL_RGB[g.ci], colT, PAL_RGB[g.ci2]);
+      if(sw>0.4&&sw<0.6) ctx.globalAlpha*=(Math.abs(sw-0.5)*2);
+    }
+    if(liveGut>0){
+      const live=gardenLiveState(g, t);
+      col=mix(col, 1, live.col);
+      gl=live.gl;
+      sz*=live.pulse;
+    }
+    ctx.fillStyle=rgbStr(col[0],col[1],col[2]);
     ctx.fillText(gl, q.sx, q.sy - sz*0.35);
   }
   ctx.globalAlpha=1;
@@ -758,10 +923,25 @@ function handleAxisHover(){
 /* ---------- copy fade ---------- */
 function updateCopy(){
   const p0=scrollProgress;
+  const zf=gardenView.zoomT;
   for(const el of copyEls){
     const a=parseFloat(el.dataset.in), b=parseFloat(el.dataset.out);
-    const show = p0>=a-0.005 && p0<=b;
-    el.classList.toggle('show', show);
+    const inRange = p0>=a-0.005 && p0<=b;
+
+    if(el.dataset.zoomReveal){
+      const minZ=parseFloat(el.dataset.zoomReveal)||0.78;
+      const show = inRange && zf>=minZ;
+      el.classList.toggle('show', show);
+      el.style.opacity = show ? String(ease(seg(zf, minZ, Math.min(1, minZ+0.18)))) : '';
+      continue;
+    }
+
+    el.classList.toggle('show', inRange);
+    if(el.dataset.zoomFade && inRange && zf>0.22){
+      el.style.opacity=String(1-ease(seg(zf,0.22,0.78))*0.94);
+    } else {
+      el.style.opacity='';
+    }
   }
 }
 
@@ -770,29 +950,30 @@ const t0=performance.now();
 function frame(){
   const t=(performance.now()-t0)*0.001;
   const p0=scrollProgress;
+  updateGardenView(p0);
   ctx.clearRect(0,0,W,H);
 
   // background lattice crossfades
-  const lineA = 1-seg(p0, SEC.s1[0]+0.04, SEC.s2[0]);          // lines fade out through S1
-  const dotA  = seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0]+0.02));
-  const inStormPhase = p0>=SEC.s4a[0] && p0<SEC.s4c[1];
-  const stormDotA = inStormPhase ? 1-seg(p0, SEC.s4c[0]+0.55, SEC.s4c[1])*0.9 : 0;
-  const rainProg = seg(p0, SEC.s4c[0], SEC.s4c[1]);
-  const isoA  = (p0>=SEC.s4c[0] ? ease(Math.min(1, rainProg*1.2)) : 0) * (p0>SEC.s6[0]? 1-seg(p0,SEC.s6[0]+0.03,1)*0.55 : 1);
+  const lineA = 1-seg(p0, SEC.s1[0]+0.04, SEC.s2[0]);
+  const dotA  = p0>=SEC.s4a[0] ? 0 : seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0]));
+  const rp=rainProgress(t, p0);
+  const stormDark=stormBgDark(p0, rp);
+  const isoBase = p0>=SEC.s4r[0] ? ease(Math.min(1, rp*1.2)) : 0;
+  const isoA = isoBase * (1-gardenView.zoomT*0.88);
+
+  drawStormBg(stormDark, p0);
+  document.getElementById('copy').classList.toggle('storm-dark', stormDark>0.32);
 
   if(lineA>0.01){
     const wave = seg(p0, SEC.s1[0], SEC.s1[0]+0.06)*(1-seg(p0,SEC.s1[0]+0.08,SEC.s2[0]));
     ctx.globalAlpha=lineA; drawGridLines(p0,t,wave); ctx.globalAlpha=1;
   }
   if(dotA>0.01) drawGridDots(dotA);
-  if(stormDotA>0.01) drawStormGridDots(t, p0, stormDotA);
-  if(isoA>0.01){ drawGroundEmergence(isoA); drawIsoFloor(isoA); }
 
   const phase=updateParticles(t);
 
   // draw particles (skip when fully in garden phase & gone)
   if(p0 < SEC.s5a[0]+0.02){
-    // depth-ish: draw in index order (fine for this density)
     for(let idx=0; idx<N; idx++){
       const p=P[idx];
       if(p.alpha<0.02) continue;
@@ -800,6 +981,19 @@ function frame(){
       const rad = baseR * p.size;
       drawParticle(p, p.x, p.y, rad, p.alpha);
     }
+  }
+
+  drawS4GridDots(t, p0, rp);
+  if(isoA>0.01){ drawGroundEmergence(isoA, rp); drawIsoFloor(isoA); }
+  if(gardenView.zoomT>0.06){
+    const w=ease(gardenView.zoomT);
+    const top=H*(0.48-w*0.14);
+    const grd=ctx.createLinearGradient(0, top, 0, H);
+    grd.addColorStop(0, 'rgba(249,249,245,0)');
+    grd.addColorStop(0.4, `rgba(210,228,186,${w*0.32})`);
+    grd.addColorStop(1, `rgba(168,198,142,${w*0.58})`);
+    ctx.fillStyle=grd;
+    ctx.fillRect(0, top, W, H-top);
   }
 
   if(p0>=SEC.s3b[0] && p0<SEC.s4a[0]) drawGutBlocks();
