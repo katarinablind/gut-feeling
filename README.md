@@ -36,18 +36,18 @@ Then visit <http://localhost:8000>.
 
 ### Fonts
 
-From **"you're too emotional"** downward, all copy uses **Source Serif Pro** in exactly two styles:
+All body copy uses **Source Serif Pro** in exactly two styles:
 
 - **Bold** — display / large lines
 - **Italic** — small lines (e.g. science notes, footer)
 
-No other typefaces in this section. All text is **black** (`#000`).
+No other typefaces for body copy. All text is **black** (`#000`).
 
-Earlier sections above that point still use **Fraunces**.
+UI chrome (the site wordmark, the "scroll" cue) currently remains in **JetBrains Mono** — under review.
 
-### Typography (work section, from "you're too emotional" down)
+### Typography
 
-Poetry-style rules:
+Poetry-style rules apply to all copy across every section:
 
 - always lowercase
 - a normal word space before sentence-ending periods (e.g. `themselves .`, not `themselves.`)
@@ -60,13 +60,14 @@ This page uses the **glyph version** — particles render as flower glyphs (✿ 
 
 ### Color
 
-Palette is inspired by a hand-drawn park illustration — warm and saturated rather than muted greys:
+Palette is inspired by a hand-drawn park illustration — saturated rather than muted greys. The hex values were deepened from the original cream-background tuning so glyphs hold contrast against the new near-white landing (`rgb(252,253,254)`):
 
-- creamy off-white background (`#F9F9F5`)
+- background: near-white with a faint cool cast (`rgb(252,253,254)`)
 - spring leaf & forest greens
 - terracotta & warm coral
 - blossom pink & lavender
-- sunny yellow & sky blue
+- honey amber (in place of the original sunny yellow — yellow lost too much contrast on white)
+- sky blue
 
 See `PALETTE` in `index.html` for the exact values.
 
@@ -94,7 +95,7 @@ gut-feeling/
 
 ### Section ownership
 
-- **Maddie** — header through "but, these signals are invisible." (S0 → S2)
+- **Madeleine** — header through "but, these signals are invisible." (S0 → S2)
 - **Catherine** — through "More than a billion women will be in menopause globally by 2030." (S3)
 - **Katarina** — storm through garden (S4 → end)
 
