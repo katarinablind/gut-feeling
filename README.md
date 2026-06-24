@@ -1,36 +1,19 @@
 # gut-feeling
 
-A data visualization on the importance of gut health, specifically during menopause.
+A scroll-driven data visualization on gut health during menopause.
 
 > *"Your body is sending signals."*
 
-Built as a single-file, scroll-driven web experience (`index.html`) with embedded CSS and JavaScript — no build step, no dependencies.
+Built as a single file — `flora.html` — with embedded CSS and JavaScript. No build step.
 
 ## Local preview
 
-Just open `index.html` in your browser. Double-click it, or:
-
-```powershell
-# Windows
-start index.html
-```
+Open `flora.html` in your browser, or:
 
 ```bash
-# macOS
-open index.html
-```
-
-If you want a local web server (useful if you add features that need one, like `fetch()`):
-
-```bash
-# Python 3
 python -m http.server 8000
-
-# Node (requires npx)
-npx serve .
+# visit http://localhost:8000/flora
 ```
-
-Then visit <http://localhost:8000>.
 
 ## Design system
 
@@ -43,8 +26,6 @@ All body copy uses **Source Serif Pro** in exactly two styles:
 
 No other typefaces for body copy. All text is **black** (`#000`).
 
-UI chrome (the site wordmark, the "scroll" cue) currently remains in **JetBrains Mono** — under review.
-
 ### Typography
 
 Poetry-style rules apply to all copy across every section:
@@ -56,38 +37,26 @@ Poetry-style rules apply to all copy across every section:
 
 ### Particles
 
-This page uses the **glyph version** — particles render as flower glyphs (✿ ❀ ✾ etc.), not spheres or tiles.
+Flower glyphs only (✿ ❀ ✾ etc.), not spheres or tiles.
 
 ### Color
 
-Palette is inspired by a hand-drawn park illustration — saturated rather than muted greys. The hex values were deepened from the original cream-background tuning so glyphs hold contrast against the new near-white landing (`rgb(252,253,254)`):
-
-- background: near-white with a faint cool cast (`rgb(252,253,254)`)
-- spring leaf & forest greens
-- terracotta & warm coral
-- blossom pink & lavender
-- honey amber (in place of the original sunny yellow — yellow lost too much contrast on white)
-- sky blue
-
-See `PALETTE` in `index.html` for the exact values.
+Warm park-inspired palette — see `PALETTE` in `flora.html`.
 
 ## Deployment
 
-This project deploys to **Vercel** automatically on every push to `main`.
+Pushes to `main` deploy to **Vercel** automatically.
 
-- **Live site:** [https://trust-your-gut-feeling.vercel.app/flora](https://trust-your-gut-feeling.vercel.app/flora) (root `/` redirects here)
-- **How it works:** Vercel watches the `main` branch on GitHub. When anyone pushes, it deploys the new version within ~10 seconds.
-- **Preview deploys:** Any push to a non-`main` branch (or a pull request) gets its own preview URL for review before merging.
-
-No build step runs — Vercel serves `flora.html` at `/flora` (and redirects `/` there).
+- **Live site:** [https://trust-your-gut-feeling.vercel.app/flora](https://trust-your-gut-feeling.vercel.app/flora) (`/` redirects here)
+- **Preview deploys:** PRs and non-`main` branches get their own Vercel preview URL
 
 ## Project structure
 
 ```
 gut-feeling/
-├── flora.html        # The site (HTML + embedded CSS/JS) — deployed to Vercel
-├── index.html        # Maddi's working copy (same content during integration)
-├── vercel.json       # Vercel deploy config (clean URLs, no trailing slash)
+├── flora.html    # Deployed site (HTML + embedded CSS/JS)
+├── index.html    # Maddi's working copy during integration
+├── vercel.json   # Vercel config (root → /flora)
 ├── .gitignore
 └── README.md
 ```
@@ -102,7 +71,7 @@ gut-feeling/
 
 ### Workflow
 
-1. **Pull before you start:** `git pull origin main` to grab the latest baseline
+1. **Pull before you start:** `git pull origin main`
 2. **Work on your own branch:** `name/feature` convention (e.g. `maddi/header-landing`)
 3. **Commit often** with clear messages
 4. **Push and open a PR** to `main` when your section is ready
