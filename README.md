@@ -75,17 +75,18 @@ See `PALETTE` in `index.html` for the exact values.
 
 This project deploys to **Vercel** automatically on every push to `main`.
 
-- **Live site:** _link goes here once Vercel is connected_
+- **Live site:** [https://trust-your-gut-feeling.vercel.app/flora](https://trust-your-gut-feeling.vercel.app/flora) (root `/` redirects here)
 - **How it works:** Vercel watches the `main` branch on GitHub. When anyone pushes, it deploys the new version within ~10 seconds.
 - **Preview deploys:** Any push to a non-`main` branch (or a pull request) gets its own preview URL for review before merging.
 
-No build step runs — Vercel serves `index.html` directly as a static site.
+No build step runs — Vercel serves `flora.html` at `/flora` (and redirects `/` there).
 
 ## Project structure
 
 ```
 gut-feeling/
-├── index.html        # The site (HTML + embedded CSS/JS)
+├── flora.html        # The site (HTML + embedded CSS/JS) — deployed to Vercel
+├── index.html        # Maddi's working copy (same content during integration)
 ├── vercel.json       # Vercel deploy config (clean URLs, no trailing slash)
 ├── .gitignore
 └── README.md
