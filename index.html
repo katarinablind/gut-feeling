@@ -68,12 +68,48 @@
     color:#000;
     text-transform:lowercase;
   }
+  .t.work.lg,
+  .t.work .lg{
+    font-size:clamp(32px, 4.5vw, 64px);
+    line-height:1.18;
+    letter-spacing:-0.01em;
+  }
+  .t.work.md{
+    font-family:'Source Serif Pro', Georgia, serif;
+    font-weight:400;
+    font-style:italic;
+    font-size:clamp(18px, 2vw, 26px);
+    line-height:1.5;
+    color:#000;
+    text-transform:lowercase;
+    white-space:normal;
+  }
+  .t.work.md.gut-line{
+    padding:0.04em 0.12em;
+    z-index:0;
+    text-shadow:
+      0 0 5px rgba(255, 255, 255, 0.95),
+      0 0 12px rgba(255, 255, 255, 0.55);
+  }
+  .t.work.md.gut-line::before{
+    content:'';
+    position:absolute;
+    left:-0.1em;
+    right:-0.1em;
+    top:-0.05em;
+    bottom:-0.05em;
+    background:rgba(255, 255, 255, 0.7);
+    border-radius:4px;
+    filter:blur(7px);
+    z-index:-1;
+    pointer-events:none;
+  }
   .t.work.sm,
   .t.work .sm{
     font-family:'Source Serif Pro', Georgia, serif;
     font-weight:400;
     font-style:italic;
-    font-size:clamp(12px,1.3vw,16px);
+    font-size:clamp(18px, 2vw, 26px);
     line-height:1.5;
     color:#000;
     text-transform:lowercase;
@@ -82,6 +118,7 @@
     max-width:360px;
   }
   .t.work.sm.show{ transform:translate(-50%,0); }
+  .t.work.sm.left.show{ transform:translateY(0); }
   .lg{ font-size:clamp(32px,4.5vw,64px); font-weight:300; letter-spacing:-0.01em; }
   .md{ font-size:clamp(15px,1.7vw,21px); font-weight:400; }
   .sm{ font-size:clamp(13px,1.4vw,18px); font-weight:400; color:#444444; }
@@ -117,7 +154,7 @@
   /* (cubic-bezier(0.23, 1, 0.32, 1) — stronger than built-in `ease`) */
 
   /* site header — three-zone layout:
-       brand+icon (left) · text nav (center) · dark CTA pill (right)
+       brand+icon (left) · journey trail (center) · text nav (right)
      Light frosted backdrop keeps it readable across the mood-arc bg shifts. */
   /* Floating header — sits above the canvas as a translucent white pill
      with a subtle blur, so the unicode field reads all the way to the top
@@ -253,6 +290,53 @@
   }
   .cta:hover .cta-arrow{ transform: translateY(2px); }
 
+  /* mobile menu toggle — hidden on desktop */
+  .menu-toggle{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:5px;
+    width:36px; height:36px;
+    padding:0;
+    background:transparent;
+    border:1px solid rgba(0, 0, 0, 0.1);
+    border-radius:10px;
+    cursor:pointer;
+    flex-shrink:0;
+    transition: background 180ms cubic-bezier(0.23, 1, 0.32, 1),
+                border-color 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .menu-toggle:hover, .menu-toggle:focus-visible{
+    background:rgba(0, 0, 0, 0.04);
+    outline:none;
+    border-color:rgba(0, 0, 0, 0.16);
+  }
+  .menu-bar{
+    display:block;
+    width:16px; height:1.5px;
+    background:#1A1A1A;
+    border-radius:1px;
+    transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+                opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .site-header.menu-open .menu-bar:nth-child(1){
+    transform:translateY(6.5px) rotate(45deg);
+  }
+  .site-header.menu-open .menu-bar:nth-child(2){ opacity:0; }
+  .site-header.menu-open .menu-bar:nth-child(3){
+    transform:translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* Keep brand & actions above the centered journey rail */
+  .site-header .brand,
+  .site-header .actions{
+    position:relative;
+    z-index:2;
+    flex-shrink:0;
+  }
+  .journey-wrapper{ z-index:1; }
+
   /* journey rail — absolutely positioned at the TRUE viewport center.
      Because .site-header is position:fixed and spans the full viewport,
      left:50% on this absolute child places its left edge at the viewport
@@ -384,97 +468,219 @@
   /* hover annotation for the gut-brain axis */
   #annot{
     position:fixed; z-index:4; pointer-events:none;
-    font-family:'Fraunces', serif; font-style:italic; font-size:13px;
-    color:#2a2a2a; opacity:0; transition:opacity .25s ease;
-    background:rgba(255,255,255,0.9); padding:3px 9px; border-radius:20px;
-    box-shadow:0 6px 18px -10px rgba(0,0,0,0.35);
-    transform:translate(-50%,-50%);
+    opacity:0;
+    transition:opacity .2s ease;
+    background:rgba(255, 255, 255, 0.98);
+    border:1px solid rgba(0, 0, 0, 0.1);
+    padding:12px 16px;
+    border-radius:12px;
+    max-width:min(300px, calc(100vw - 28px));
+    box-shadow:
+      0 10px 28px -10px rgba(0, 0, 0, 0.18),
+      0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    text-align:left;
+    white-space:normal;
+    overflow-wrap:break-word;
+    word-wrap:break-word;
   }
   #annot.show{ opacity:1; }
-
-  /* scroll cue */
-  /* scroll cue — rounded pill at the bottom of the landing */
-  #cue{
-    position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
-    z-index:3;
-    font-family: var(--chrome-font);
-    font-size:14px; font-weight:500;
-    color:#1A1A1A;
-    background:rgba(255, 255, 255, 0.95);
-    border:1px solid rgba(0, 0, 0, 0.08);
-    padding:11px 26px;
-    border-radius:999px;
-    letter-spacing:-0.003em;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    box-shadow:0 6px 18px -10px rgba(0, 0, 0, 0.12);
-    transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1);
-    pointer-events:none;
+  #annot .annot-title{
+    display:block;
+    font-family:'Source Serif Pro', Georgia, serif;
+    font-weight:700; font-style:normal;
+    font-size:clamp(15px, 1.6vw, 19px);
+    line-height:1.25;
+    color:#000;
+    text-transform:lowercase;
   }
+  #annot .annot-sub{
+    display:block;
+    font-family:'Source Serif Pro', Georgia, serif;
+    font-weight:400; font-style:italic;
+    font-size:clamp(13px, 1.35vw, 16px);
+    line-height:1.4;
+    color:#000;
+    margin-top:6px;
+    text-transform:lowercase;
+  }
+
+  /* scroll cue — dark pill at the bottom of the landing (matches header CTA style) */
+  #cue{
+    position:fixed; left:50%; bottom:56px;
+    transform:translateX(-50%);
+    z-index:3;
+    font-size:16px;
+    padding:13px 30px 13px 32px;
+    pointer-events:auto;
+    transition:
+      opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+      background 200ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  #cue:active{ transform:translateX(-50%) scale(0.97); }
+  #cue:hover .cta-arrow, #cue:focus-visible .cta-arrow{ transform:translateY(2px); }
 
   /* ── Responsive header ──────────────────────────────────────────────
-     Strategy: keep brand · nav · CTA on a single row at every screen
-     size, and when there's no room for the journey trail in between,
-     let the trail wrap onto its own row beneath the main header. */
+     Desktop (769px+): inline nav + full journey rail.
+     Mobile (768px−): hamburger menu + compact rail — always one row. */
 
-  /* Tablet — slight proportional shrink, still all on one row */
-  @media (max-width: 900px){
-    .site-header{ padding:14px 28px; gap:18px; }
-    .site-header .brand{ font-size:16px; }
-    .brand-icon{ font-size:16px; }
-    .journey-rail{ width:260px; }
-    .site-header .nav{ gap:22px; }
-    .navlink{ font-size:13px; }
-    .cta{ font-size:12px; padding:8px 16px 8px 18px; }
-    .cta-arrow{ font-size:11px; }
-  }
-
-  /* Below ~780px the inline layout starts to crowd → wrap journey to a
-     new row below the main header. Brand · nav · CTA stay on row 1;
-     the trail gets its own row 2 with a faint divider for clarity.
-     Rail returns to normal flow (no longer absolutely positioned) and is
-     centered by its parent wrapper inside the new row. */
-  @media (max-width: 780px){
-    .site-header{
-      flex-wrap: wrap;
-      padding-bottom: 14px;
-      row-gap: 0;
-    }
-    .journey-wrapper{
-      flex-basis: 100%;
-      order: 99;                /* push to end of flex order = new row */
-      padding-top: 10px;
-      margin-top: 4px;
-      border-top: 1px solid rgba(0, 0, 0, 0.05);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-    .journey-rail{
+  @media (min-width: 769px){
+    .menu-toggle{ display:none !important; }
+    .site-header .nav{
+      display:flex !important;
       position:static;
-      transform:none;
-      width:280px;
+      flex-direction:row;
+      align-items:center;
+      gap:24px;
+      min-width:auto;
+      padding:0;
+      background:transparent;
+      border:0;
+      border-radius:0;
+      box-shadow:none;
     }
+    .navlink{
+      padding:6px 2px;
+      text-align:center;
+    }
+    .navlink::after{ display:block; }
   }
 
-  /* Phone — compress brand and actions inside row 1, keep nav visible */
-  @media (max-width: 480px){
-    .site-header{ padding:12px 18px; gap:14px; }
+  @media (max-width: 1024px){
+    .site-header{ padding:12px 22px; gap:16px; }
+    .journey-rail{ width:min(240px, 24vw); }
+    .journey-rail-svg{ height:30px; }
+  }
+
+  @media (max-width: 768px){
+    .site-header{ padding:10px 14px; gap:8px; flex-wrap:nowrap; }
     .site-header .brand{ font-size:14px; gap:6px; }
     .brand-icon{ font-size:14px; }
-    .site-header .actions{ gap:18px; }
-    .site-header .nav{ gap:16px; }
-    .navlink{ font-size:12px; padding:4px 2px; }
-    .cta{ font-size:11px; padding:6px 12px; }
+    .journey-rail{
+      width:min(128px, 24vw);
+      gap:5px;
+    }
+    .journey-rail-svg{ height:22px; }
+    .journey-end{ font-size:9px; }
+    .journey-end--gut  { transform:translateY(8px); }
+    .journey-end--brain{ transform:translateY(-8px); }
+    .site-header .actions{ position:relative; gap:8px; }
+    .menu-toggle{ display:flex; }
+    .site-header .nav{
+      display:none;
+      position:absolute;
+      top:calc(100% + 8px);
+      right:0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:2px;
+      min-width:168px;
+      padding:6px;
+      background:rgba(255, 255, 255, 0.98);
+      border:1px solid rgba(0, 0, 0, 0.08);
+      border-radius:14px;
+      box-shadow:0 12px 32px -12px rgba(0, 0, 0, 0.18);
+    }
+    .site-header.menu-open .nav{ display:flex; }
+    .navlink{
+      font-size:14px;
+      padding:10px 12px;
+      border-radius:8px;
+      text-align:left;
+    }
+    .navlink::after{ display:none; }
+    .navlink:hover, .navlink:focus-visible{
+      background:rgba(0, 0, 0, 0.04);
+    }
+    .cta{
+      font-size:11px;
+      padding:7px 12px;
+      gap:5px;
+    }
     .cta-arrow{ font-size:10px; }
-    .journey-rail{ width:240px; gap:8px; }
-    .journey-end{ font-size:10px; }
   }
 
-  /* Very tiny screens — drop the secondary nav as a last resort to keep
-     brand + CTA on row 1 without overflow. */
-  @media (max-width: 360px){
-    .site-header .nav{ display:none; }
-    .journey-rail{ width:200px; }
+  @media (max-width: 400px){
+    .site-header .brand{ font-size:12px; }
+    .journey-rail{ width:min(96px, 26vw); }
+    .cta{ padding:7px 10px; }
+  }
+
+  /* ── Responsive copy layer ─────────────────────────────────────────── */
+  @media (max-width: 768px){
+    .t.work.lg,
+    .t.work .lg{
+      font-size:clamp(22px, 6.2vw, 34px);
+      line-height:1.22;
+      white-space:normal;
+    }
+    .t.work.md,
+    .t.work.sm,
+    .t.work .sm{
+      font-size:clamp(13px, 3.6vw, 17px);
+      line-height:1.45;
+      max-width:min(88vw, 320px);
+    }
+    #copy .t.lg.work,
+    #copy .t.md.work,
+    #copy .t.sm.work.left{
+      left:5% !important;
+      right:auto !important;
+      max-width:90vw;
+    }
+    #copy .t.lg.work[style*="right:"],
+    #copy .t.sm.work[style*="right:"]{
+      left:auto !important;
+      right:5% !important;
+      max-width:90vw;
+    }
+    #copy .t.md.work[style*="left: 50%"]{
+      left:5% !important;
+      max-width:90vw !important;
+    }
+    #copy .t.sm.work:not(.left){
+      max-width:min(90vw, 340px);
+    }
+    #copy .t.tc{
+      width:min(90vw, 360px);
+      padding:0 4vw;
+    }
+    #copy .t.lg.work[style*="top: 17%"],
+    #copy .t.lg.work[style*="top: 24%"],
+    #copy .t.lg.work[style*="top: 26%"]{
+      top:20% !important;
+    }
+    #copy .t.lg.work[style*="top: 10%"]{
+      top:18% !important;
+    }
+    #copy .t.lg.work[style*="bottom:"]{
+      bottom:20% !important;
+    }
+    #copy .t.sm.work[style*="bottom: 5%"]{
+      bottom:4% !important;
+    }
+    #copy .t.sm.work[data-ripple="1"]{
+      font-size:clamp(12px, 3.2vw, 15px);
+    }
+    #annot{
+      max-width:calc(100vw - 24px);
+      padding:10px 12px;
+    }
+    #annot .annot-title{ font-size:clamp(13px, 3.5vw, 16px); }
+    #annot .annot-sub{ font-size:clamp(12px, 3.1vw, 14px); }
+    #cue{
+      bottom:44px;
+      font-size:14px;
+      padding:11px 22px 11px 24px;
+    }
+  }
+
+  @media (max-width: 768px) and (max-height: 700px){
+    #copy .t.lg.work{ top:18% !important; }
+    #copy .t.sm.work[style*="top: 42%"]{ top:38% !important; }
+    #copy .t.lg.work[style*="bottom:"]{ bottom:22% !important; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -494,7 +700,7 @@
   <div id="scroll"></div>
 
   <!-- Persistent site header — three zones:
-         brand (left) · journey trail (center) · actions [nav + CTA] (right) -->
+         brand (left) · journey trail (center) · nav (right) -->
   <header class="site-header">
     <div class="brand" id="brand-link" role="button" tabindex="0" aria-label="Scroll to top">
       <span class="brand-icon" aria-hidden="true">❀</span>
@@ -515,14 +721,15 @@
       </div>
     </div>
     <div class="actions">
-      <nav class="nav">
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+      </button>
+      <nav class="nav" id="site-nav" aria-label="Site">
         <button class="navlink" data-modal="about">About</button>
         <button class="navlink" data-modal="background">Background</button>
       </nav>
-      <button class="cta" id="begin-cta" type="button" aria-label="begin scrolling">
-        Begin
-        <span class="cta-arrow" aria-hidden="true">↓</span>
-      </button>
     </div>
   </header>
 
@@ -530,57 +737,60 @@
   <div id="copy">
 
     <!-- S0 — landing -->
-    <div class="t lg work" data-in="0.015" data-out="0.155" style="top:22%; left:6%;">your body is sending signals .</div>
-    <div class="t md work" data-in="0.040" data-out="0.155" style="top:36%; left:46%; font-size:clamp(18px, 2vw, 26px);">many of them start in the gut ;</div>
+    <div class="t lg work" data-in="0.015" data-out="0.305" style="top:22%; left:6%;">your body is sending signals .</div>
+    <div class="t md work gut-line" data-in="0.040" data-out="0.305" style="top:36%; left:46%;">many of them start in the gut ;</div>
     <!-- staggered descent — each word arrives one beat after the last, each
          a step further down and to the right. The pause between "many of them"
          (data-in=0.040) and "sleep" (data-in=0.070) is intentionally longer
-         than the gap between consecutive staggered words. data-ripple="1" 
+         than the gap between consecutive staggered words (~0.060). data-ripple="1" 
          means each word's arrival both pulses the field AND maintains a 
          sustained clear zone around itself while visible. -->
-    <div class="t sm work" data-in="0.070" data-out="0.180" data-ripple="1" style="top:50%; left:22%; font-size:clamp(18px, 2vw, 26px); letter-spacing:0.05em; text-align:center;">sleep</div>
-    <div class="t sm work" data-in="0.087" data-out="0.180" data-ripple="1" style="top:60%; left:38%; font-size:clamp(18px, 2vw, 26px); letter-spacing:0.05em; text-align:center;">mood</div>
-    <div class="t sm work" data-in="0.104" data-out="0.180" data-ripple="1" style="top:70%; left:55%; font-size:clamp(18px, 2vw, 26px); letter-spacing:0.05em; text-align:center;">digestion</div>
-    <div class="t sm work" data-in="0.121" data-out="0.180" data-ripple="1" style="top:80%; left:73%; font-size:clamp(18px, 2vw, 26px); letter-spacing:0.05em; text-align:center;">energy</div>
+    <div class="t sm work" data-in="0.070" data-out="0.305" data-ripple="1" style="top:50%; left:22%; letter-spacing:0.05em; text-align:center;">sleep</div>
+    <div class="t sm work" data-in="0.130" data-out="0.305" data-ripple="1" style="top:60%; left:38%; letter-spacing:0.05em; text-align:center;">mood</div>
+    <div class="t sm work" data-in="0.190" data-out="0.305" data-ripple="1" style="top:70%; left:55%; letter-spacing:0.05em; text-align:center;">digestion</div>
+    <div class="t sm work" data-in="0.250" data-out="0.305" data-ripple="1" style="top:80%; left:73%; letter-spacing:0.05em; text-align:center;">energy</div>
 
     <!-- S1 — begins after all four words have landed, reacted, and faded together -->
-    <div class="t lg work" data-in="0.235" data-out="0.510" style="top:17%; left:7%;">scientifically speaking ,</div>
-    <div class="t md work tc" data-in="0.255" data-out="0.510" style="top:26%; font-size:clamp(18px, 2vw, 26px); max-width:min(90vw, 480px);">can you trust your gut feeling ?</div>
-    <div class="t sm work" data-in="0.305" data-out="0.510" style="top:83%; left:50%; font-size:clamp(18px, 2vw, 26px); text-align:center; max-width:min(90vw, 520px); white-space:normal;">that depends on the state of the
+    <div class="t lg work" data-in="0.340" data-out="0.615" style="top:17%; left:7%;">scientifically speaking ,</div>
+    <div class="t md work tc" data-in="0.360" data-out="0.615" style="top:26%; max-width:min(90vw, 480px);">can you trust your gut feeling ?</div>
+    <div class="t sm work" data-in="0.410" data-out="0.615" style="top:83%; left:50%; text-align:center; max-width:min(90vw, 520px); white-space:normal;">that depends on the state of the
 ecosystem producing it .</div>
 
-    <!-- S2 -->
-    <div class="t lg work" data-in="0.715" data-out="0.800" style="top:8%; left:6%;">the gut microbiome
+    <!-- S2 — pair gap ~0.028 · group gap ~0.068 · science fact +0.044 after headline -->
+    <div class="t lg work" data-in="0.637" data-out="0.823" style="top:24%; left:6%;">the gut microbiome
 shapes mood and cognition ;</div>
-    <div class="t sm work" data-in="0.735" data-out="0.800" style="top:26%; left:6%;">through the gut–brain axis .</div>
-    <div class="t lg work" data-in="0.765" data-out="0.800" style="bottom:24%; right:6%; text-align:right;">but , these signals
+    <div class="t sm work left" data-in="0.665" data-out="0.823" style="top:42%; left:14%;">through the gut–brain axis .</div>
+    <div class="t lg work" data-in="0.733" data-out="0.823" style="bottom:26%; right:6%; text-align:right;">but , these signals
 are invisible .</div>
-    <div class="t sm work" data-in="0.770" data-out="0.800" style="bottom:14%; right:6%; text-align:right; max-width:300px;">what the science says : ~90% of serotonin is produced in the gut . gut microbes help regulate its production .</div>
+    <div class="t sm work" data-in="0.777" data-out="0.823" style="bottom:5%; right:6%; text-align:right; max-width:300px;">what the science says : ~90% of serotonin is produced in the gut . gut microbes help regulate its production .</div>
 
     <!-- S3 -->
-    <div class="t lg work" data-in="0.813" data-out="0.963" style="top:9%; left:6%;">during menopause ,
+    <div class="t lg work" data-in="0.918" data-out="0.978" style="top:26%; left:6%;">during menopause ,
 they become hard to read .</div>
-    <div class="t md work" data-in="0.905" data-out="0.963" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030 .</div>
+    <div class="t md work" data-in="0.938" data-out="0.978" style="top:40%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030 .</div>
 
     <!-- S4 -->
-    <div class="t lg tc work" data-in="0.967" data-out="0.978">“you’re too emotional”</div>
-    <div class="t tc work" data-in="0.978" data-out="0.992">
-      <div class="lg" style="font-size:clamp(22px,2.6vw,34px); line-height:1.16;">over time ,
+    <div class="t lg tc work" data-in="0.985" data-out="0.995">“you’re too emotional”</div>
+    <div class="t tc work" data-in="0.995" data-out="0.998">
+      <div class="lg">over time ,
 many women stop
 trusting themselves .</div>
       <div class="sm" style="margin-top:14px;">what the science says : 20% of working women experience a loss of confidence during menopause .</div>
     </div>
 
     <!-- S5 -->
-    <div class="t lg work" data-in="0.990" data-out="0.998" style="top:10%; right:7%; text-align:right;">your body has always
+    <div class="t lg work" data-in="0.998" data-out="1.01" style="top:10%; right:7%; text-align:right;">your body has always
 been speaking ;</div>
 
     <!-- S6 -->
-    <div class="t sm work" data-in="0.992" data-out="1.01" style="bottom:12%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center;">we are not doctors&nbsp;♡</div>
+    <div class="t sm work" data-in="0.9995" data-out="1.01" style="bottom:12%; left:50%; transform:translate(-50%,0); white-space:normal; text-align:center;">we are not doctors&nbsp;♡</div>
   </div>
 
   <div id="annot"></div>
-  <div id="cue">Scroll</div>
+  <button class="cta" id="cue" type="button" aria-label="Scroll to begin">
+    Scroll
+    <span class="cta-arrow" aria-hidden="true">↓</span>
+  </button>
 
   <!-- Modal overlay (about / background) -->
   <div id="modal" class="modal">
@@ -617,9 +827,10 @@ function resize(){
   if('textRendering' in ctx) ctx.textRendering = 'geometricPrecision';
   // scroll length: ~9 viewport heights of scrolling
   scrollEl.style.height = (TOTAL_VH*H) + 'px';
+  clearLandingGlyphSprites();
   layoutGridBase();
 }
-const TOTAL_VH = 9.2;
+const TOTAL_VH = 9.8;
 
 /* ---------- palette ---------- */
 /* Palette — bright AND saturated for the near-white landing.
@@ -787,7 +998,7 @@ let scrollProgress=0;
 function updateScroll(){
   const max = (scrollEl.scrollHeight - window.innerHeight);
   scrollProgress = max>0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-  cue.style.opacity = scrollProgress>0.04 ? '0' : '0.9';
+  cue.style.opacity = scrollProgress>0.04 ? '0' : '1';
 }
 window.addEventListener('scroll', updateScroll, {passive:true});
 
@@ -796,14 +1007,20 @@ function seg(p,a,b){ return Math.min(1, Math.max(0,(p-a)/(b-a))); }
 function ease(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
 function easeOut(t){ return 1-Math.pow(1-t,3); }
 function easeInCubic(t){ return t*t*t; }
+/* S2→S3 hold — stream stays on screen with copy cleared before the gut blooms. */
+const S2_S3_GAP = 0.075;
+const S1_DUR = 0.395 - S2_S3_GAP;
+const S2_DUR = 0.203;
+const S3_START = 0.903;
 const SEC = {
-  /* s0/s1 boundary pushed to 0.220 so the landing field (hover, word ripples,
-     clear zones, ambient bobbing) stays active until energy arrives, reacts,
-     and holds — only then does the S1 circle-morph begin. */
-  s0:[0, 0.220], s1:[0.220, 0.700], s2:[0.700, 0.805],
-  s3a:[0.805, 0.885], s3b:[0.885, 0.965],
-  s4a:[0.965, 0.978], s4b:[0.978, 0.986], s4c:[0.986, 0.992],
-  s5a:[0.992, 0.996], s5b:[0.996, 0.999], s5c:[0.999, 0.9995], s6:[0.9995, 1.0]
+  /* s0/s1 boundary at 0.305 — landing copy (lead lines + ripple words) fades
+     together; only then does the S1 circle-morph begin. */
+  s0:[0, 0.305],
+  s1:[0.305, 0.305 + S1_DUR],
+  s2:[0.305 + S1_DUR, 0.305 + S1_DUR + S2_DUR],
+  s3a:[S3_START, 0.958], s3b:[0.958, 0.983],
+  s4a:[0.983, 0.991], s4b:[0.991, 0.995], s4c:[0.995, 0.998],
+  s5a:[0.998, 0.9993], s5b:[0.9993, 0.9997], s5c:[0.9997, 0.9999], s6:[0.9999, 1.0]
 };
 
 /* ---------- pointer ---------- */
@@ -833,6 +1050,57 @@ const HOVER_RIPPLE = 12;      // ripple wave amplitude — kept subtle
 const HOVER_WAVE_LEN = 260;   // wide spacing → fewer visible crests
 const HOVER_WAVE_SPEED = 2.6; // rad/sec — slow outward drift
 const HOVER_EASE = 0.14;      // softer lerp so motion stays fluid
+const LANDING_BOB_X = 2.6;
+const LANDING_BOB_Y = 4.5;
+function landingBobOffset(p, t){
+  return {
+    x: Math.cos(t * p.spd * 0.7 + p.ph * 1.3) * LANDING_BOB_X,
+    y: Math.sin(t * p.spd + p.ph) * LANDING_BOB_Y,
+  };
+}
+function easeToward(cur, target, rate, dt){
+  const k = 1 - Math.pow(1 - rate, dt * 60);
+  return cur + (target - cur) * k;
+}
+
+/* Landing glyph sprites — fillText re-hints to the pixel grid every frame, which
+   reads as tiny stairsteps when the bob is only a few px. Cached bitmaps drawn
+   with drawImage interpolate smoothly at fractional positions. */
+let landingGlyphSprites = Object.create(null);
+function clearLandingGlyphSprites(){
+  landingGlyphSprites = Object.create(null);
+}
+function landingGlyphSprite(glyph, rgb, fontPx){
+  const key = glyph + '|' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + '|' + fontPx;
+  let sprite = landingGlyphSprites[key];
+  if(sprite) return sprite;
+  const pad = 3;
+  const scratch = document.createElement('canvas').getContext('2d');
+  scratch.font = `${fontPx}px ${GLYPH_FONT}`;
+  const tw = scratch.measureText(glyph).width;
+  const cssW = Math.ceil(tw) + pad * 2;
+  const cssH = fontPx + pad * 2;
+  const scale = DPR * 2;
+  const s = document.createElement('canvas');
+  s.width = Math.ceil(cssW * scale);
+  s.height = Math.ceil(cssH * scale);
+  const sc = s.getContext('2d');
+  sc.scale(scale, scale);
+  sc.font = `${fontPx}px ${GLYPH_FONT}`;
+  sc.textAlign = 'center';
+  sc.textBaseline = 'middle';
+  const cx = cssW * 0.5;
+  const cy = cssH * 0.5;
+  sc.globalAlpha = 0.10;
+  sc.fillStyle = 'rgb(30, 24, 18)';
+  sc.fillText(glyph, cx, cy + 0.8);
+  sc.globalAlpha = 1;
+  sc.fillStyle = rgbStr(rgb[0], rgb[1], rgb[2]);
+  sc.fillText(glyph, cx, cy);
+  sprite = { canvas: s, w: cssW, h: cssH, ox: cx, oy: cy };
+  landingGlyphSprites[key] = sprite;
+  return sprite;
+}
 
 /* Word arrival ripples — each newly-shown poetic word emits a single
    expanding ring of displacement in the glyph field, then fades.
@@ -929,11 +1197,22 @@ function buildGarden(){
   gardenPts.forEach(p=>p.norm=p.order/maxO);
 }
 
-/* draw one particle — glyph mode.
-   Subpixel positions are kept (NOT rounded) so the slow bobbing animation
-   reads as smooth analog motion. Crispness comes from DPR=3 + manual shadow
-   instead. A lighter shadow keeps colors looking bright instead of greyed-out. */
-function drawParticle(p, x, y, rad, alpha){
+/* draw one particle — glyph mode. */
+function drawLandingParticle(p, x, y, rad, alpha){
+  if(alpha <= 0.01) return;
+  let c = p.rgb || PAL_RGB[p.ci];
+  if(p.gray > 0) c = mix(c, p.gray, [204, 204, 204]);
+  const fontPx = Math.max(1, (rad * 2.6) | 0);
+  const sprite = landingGlyphSprite(p.glyph, c, fontPx);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  if('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(sprite.canvas, x - sprite.ox, y - sprite.oy, sprite.w, sprite.h);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+function drawParticle(p, x, y, rad, alpha, noShadow){
   if(alpha<=0.01) return;
   let c = p.rgb || PAL_RGB[p.ci];
   if(p.gray>0) c = mix(c, p.gray, [204,204,204]);
@@ -941,33 +1220,58 @@ function drawParticle(p, x, y, rad, alpha){
   ctx.font = `${fontPx}px ${GLYPH_FONT}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // Faint shadow — just enough lift to imply depth, not enough to dull color
-  ctx.globalAlpha = alpha * 0.10;
-  ctx.fillStyle = 'rgb(30, 24, 18)';
-  ctx.fillText(p.glyph, x, y + 0.8);
-  // Main glyph — full color, smooth subpixel position
+  if(!noShadow){
+    ctx.globalAlpha = alpha * 0.10;
+    ctx.fillStyle = 'rgb(30, 24, 18)';
+    ctx.fillText(p.glyph, x, y + 0.8);
+  }
   ctx.globalAlpha = alpha;
   ctx.fillStyle = rgbStr(c[0], c[1], c[2]);
   ctx.fillText(p.glyph, x, y);
   ctx.globalAlpha = 1;
 }
 
+function drawAxisPopBackdrop(x, y, rad, alpha){
+  const a = Math.min(1, Math.max(0.75, alpha));
+  const glyphR = Math.max(10, rad * 1.35);
+  const outerR = glyphR * 2.15;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, outerR);
+  g.addColorStop(0, `rgba(255, 255, 255, ${0.94 * a})`);
+  g.addColorStop(0.42, `rgba(255, 255, 255, ${0.72 * a})`);
+  g.addColorStop(0.72, `rgba(255, 255, 255, ${0.28 * a})`);
+  g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.save();
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, outerR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+function axisPopScreenCenter(p){
+  return { x: p.x + p.hx, y: p.y + p.hy };
+}
+function drawAxisPopGlyph(p, drawX, drawY, drawRad, alpha){
+  drawAxisPopBackdrop(drawX, drawY, drawRad, Math.max(alpha, 0.9));
+  drawParticle(p, drawX, drawY, drawRad, alpha, true);
+}
+
 /* S1 sphere — vivid palette, soft color bloom, rim on facing glyphs */
 function drawSphereGlyph(p, x, y, rad, alpha, zR){
   if(alpha <= 0.01) return;
   const c = p.rgb || PAL_RGB[p.ci];
+  const vivid = p._sphereHoverMix !== undefined ? p._sphereHoverMix : 1;
   const fontPx = Math.max(1, (rad * 2.6) | 0);
   ctx.font = `${fontPx}px ${GLYPH_FONT}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.globalAlpha = alpha * 0.32;
+  ctx.globalAlpha = alpha * 0.32 * Math.max(0.06, vivid);
   ctx.fillStyle = rgbStr(c[0], c[1], c[2]);
   ctx.fillText(p.glyph, x, y);
 
   const rim = Math.min(1, Math.max(0, (zR - 0.08) / 0.72));
-  if(rim > 0.05){
-    ctx.globalAlpha = alpha * rim * 0.52;
+  if(rim > 0.05 && vivid > 0.06){
+    ctx.globalAlpha = alpha * rim * 0.52 * vivid;
     ctx.fillStyle = 'rgb(255, 255, 255)';
     ctx.fillText(p.glyph, x, y);
   }
@@ -1212,6 +1516,22 @@ function sphereFrame(t){
   };
 }
 
+/* S1 sphere — ink-black at rest; palette blooms under the cursor on hover */
+const SPHERE_INK_RGB = [14, 14, 16];
+function spherePointerColorMix(sx, sy, morph, frame){
+  if(morph < 0.55) return 0;
+  if(PREFERS_REDUCED_MOTION) return morph > 0.65 ? 1 : 0;
+  if(!pointer.active) return 0;
+  const pdx = pointer.x - frame.cx;
+  const pdy = pointer.y - frame.cy;
+  if(Math.hypot(pdx, pdy) > frame.R * 1.05) return 0;
+  const d = Math.hypot(sx - pointer.x, sy - pointer.y);
+  const r = Math.max(84, frame.R * 0.5);
+  if(d >= r) return 0;
+  const f = 1 - d / r;
+  return f * f * (3 - 2 * f);
+}
+
 function rotateProject(lx, ly, lz, frame){
   const { cx, cy, R, camZ } = frame;
   const { xR, yR, zR } = rotateLocal(lx, ly, lz, frame);
@@ -1389,7 +1709,7 @@ function buildSphereDecor(){
 
 function sphereDecorAlpha(p0){
   const fadeIn  = ease(Math.min(1, seg(p0, SEC.s1[0], SEC.s1[0] + 0.12)));
-  const fadeOut = 1 - ease(seg(p0, SEC.s2[0] - 0.08, SEC.s2[0]));
+  const fadeOut = 1 - ease(seg(p0, S2_BLEND_START, S2_BLEND_START + 0.04));
   return fadeIn * fadeOut;
 }
 
@@ -1473,24 +1793,168 @@ function collectSphereDecorDrawList(t, p0){
 
   return { clouds, ringsBehind, ringsFront };
 }
+function axisColumnGeom(){
+  const halfW = Math.min(W, H) * 0.041;
+  return { halfW };
+}
+function axisWidthAt(u){
+  const swell = Math.sin(u * Math.PI * 2.7 + 0.45) * 0.09;
+  const ripple = Math.sin(u * Math.PI * 5.3 + 1.1) * 0.038;
+  return 1 + swell + ripple;
+}
+/* Gut→brain stream path — low left sweep, then a deeper arch to top-right. */
+function axisSpine(u){
+  const x0 = W * 0.10, y0 = H * 0.80;
+  const x1 = W * 0.50, y1 = H * 0.76;
+  const x2 = W * 0.74, y2 = H * 0.30;
+  const x3 = W * 0.90, y3 = H * 0.24;
+  const t = u, mt = 1 - t;
+  return {
+    x: mt*mt*mt*x0 + 3*mt*mt*t*x1 + 3*mt*t*t*x2 + t*t*t*x3,
+    y: mt*mt*mt*y0 + 3*mt*mt*t*y1 + 3*mt*t*t*y2 + t*t*t*y3,
+  };
+}
+function axisNormal(u){
+  const eps = 0.005;
+  const a = axisSpine(Math.max(0, u - eps));
+  const b = axisSpine(Math.min(1, u + eps));
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return { nx: -dy / len, ny: dx / len };
+}
+function axisPointAt(u, lane){
+  const spine = axisSpine(u);
+  const { nx, ny } = axisNormal(u);
+  const halfW = axisColumnGeom().halfW * axisWidthAt(u);
+  return { x: spine.x + nx * lane * halfW, y: spine.y + ny * lane * halfW, u };
+}
+function axisUFromPointer(px, py){
+  let bestU = 0, bestD = Infinity;
+  for(let i = 0; i <= 72; i++){
+    const u = i / 72;
+    const s = axisSpine(u);
+    const d = Math.hypot(px - s.x, py - s.y);
+    if(d < bestD){ bestD = d; bestU = u; }
+  }
+  return { u: bestU, dist: bestD };
+}
+function initAxisStream(p){
+  if(p._axisReady) return;
+  p._axisReady = true;
+  p._axisOnStream = hash2(p.i * 5 + p.j * 11, p.j * 7 + p.i * 13) < 0.42;
+  p._axisSpeed = 0.030 + hash2(p.i + 2, p.j + 3) * 0.058;
+  p._axisDir = hash2(p.i + 5, p.j + 7) >= 0.5 ? 1 : -1;
+  p._axisLane = (hash2(p.i + 23, p.j + 59) - 0.5) * 1.9;
+  p._axisU = AXIS_U_INSET + hash2(p.i + 41, p.j + 67) * (1 - 2 * AXIS_U_INSET);
+  p._axisFactId = Math.floor(hash2(p.i + 29, p.j + 41) * AXIS_FACTS.length);
+  p._axisStepT = undefined;
+  p._axisRespawn = false;
+}
+const AXIS_U_INSET = 0.09;
+const AXIS_U_FADE = 0.11;
+const S2_BLEND_START = SEC.s2[0] - 0.10;
+const S2_BLEND_END = SEC.s2[0];
+const S2_MOTION_RAMP_END = SEC.s2[0] + 0.06;
+const AXIS_ZONE_LO = S2_BLEND_START - 0.02;
+function s2TransitionMorph(p0){
+  return ease(seg(p0, S2_BLEND_START, S2_BLEND_END));
+}
+function s2StreamMotionMul(p0){
+  if(p0 < S2_BLEND_START) return 0;
+  if(p0 >= S2_MOTION_RAMP_END) return 1;
+  return ease(seg(p0, S2_BLEND_START, S2_MOTION_RAMP_END));
+}
+let axisStreamPrimed = false;
+function primeAxisStream(t){
+  if(axisStreamPrimed) return;
+  axisStreamPrimed = true;
+  const stream = [];
+  for(let i = 0; i < N; i++){
+    initAxisStream(P[i]);
+    if(P[i]._axisOnStream) stream.push(i);
+  }
+  stream.sort((a, b) => hash2(P[a].i + 91, P[a].j + 53) - hash2(P[b].i + 91, P[b].j + 53));
+  const span = 1 - 2 * AXIS_U_INSET;
+  const n = stream.length;
+  for(let k = 0; k < n; k++){
+    const p = P[stream[k]];
+    p._axisDir = k % 2 === 0 ? 1 : -1;
+    p._axisFactId = k % AXIS_FACTS.length;
+    const frac = (k + 0.5) / n;
+    const jitter = (hash2(p.i + 31, p.j + 47) - 0.5) * (span / n) * 0.75;
+    p._axisU = Math.max(AXIS_U_INSET, Math.min(1 - AXIS_U_INSET, AXIS_U_INSET + frac * span + jitter));
+    p._axisStepT = t;
+    p._axisRespawn = false;
+  }
+}
+function axisStreamPathAlpha(u){
+  if(u <= 0 || u >= 1) return 0;
+  let a = 1;
+  if(u < AXIS_U_FADE) a *= ease(u / AXIS_U_FADE);
+  if(u > 1 - AXIS_U_FADE) a *= ease((1 - u) / AXIS_U_FADE);
+  return a;
+}
+function axisStreamPathAlphaFor(p){
+  return axisStreamPathAlpha(axisStreamU(p));
+}
+function axisStepStreamU(p, t, speedMul = 1){
+  const stepT = p._axisStepT ?? t;
+  const dt = Math.min(0.05, t - stepT) * speedMul;
+  p._axisStepT = t;
+  let u = p._axisU + p._axisSpeed * p._axisDir * dt;
+  p._axisRespawn = false;
+  if(p._axisDir > 0 && u > 1 + AXIS_U_FADE * 0.2){
+    u = -AXIS_U_FADE * 0.55;
+    p._axisRespawn = true;
+  } else if(p._axisDir < 0 && u < -AXIS_U_FADE * 0.2){
+    u = 1 + AXIS_U_FADE * 0.55;
+    p._axisRespawn = true;
+  }
+  p._axisU = u;
+  return Math.max(0, Math.min(1, u));
+}
+function axisStreamU(p, t){
+  if(p._axisU === undefined) initAxisStream(p);
+  return Math.max(0, Math.min(1, p._axisU));
+}
+function axisStreamPoint(p, t){
+  return axisPointAt(axisStreamU(p, t), p._axisLane);
+}
 function axisTarget(p, idx){
-  // vertical double-lobe (figure-8) with a meandering spine — evokes a
-  // hand-drawn travel path between brain (top) and gut (bottom).
-  const cx=W*0.5, top=H*0.15, bot=H*0.87, ringW=Math.min(W,H)*0.10;
-  const u=(idx+0.5)/N;                              // 0..1 down the column
-  const profile=Math.abs(Math.sin(u*Math.PI*2));   // figure-8 width envelope
-  const halfW=ringW*(0.16+0.84*profile);
-  const spread=(hash2(p.i+3,p.j+9)-0.5)*2;          // -1..1 across the lobe
-  const y=top+u*(bot-top);
-  // sinuous spine — wider, slower wave + a smaller jittery wave
-  const meander = Math.sin(u*Math.PI*3.4)*ringW*1.6
-                + Math.sin(u*Math.PI*7.2 + 0.7)*ringW*0.35;
-  return { x: cx + meander + spread*halfW, y: y };
+  initAxisStream(p);
+  if(p._axisOnStream) return axisStreamPoint(p, 0);
+  const u = (idx + 0.5) / N;
+  const lane = (hash2(p.i + 3, p.j + 9) - 0.5) * 1.9;
+  return axisPointAt(u, lane);
+}
+
+/* S2 hover — evenly spaced bands + one popped glyph */
+let axisPopIdx = -1;
+let axisPopStrength = 0;
+let axisActiveCallout = null;
+let axisStickyIdx = -1;
+let axisStickyU = null;
+const AXIS_GLYPH_HOVER_R = 52;
+const AXIS_POP_BASE_RAD = 6.0;
+const AXIS_POP_TARGET_RAD = 17;
+const AXIS_POP_LIFT = 14;
+function axisPopVisualStrength(){
+  if(axisPopIdx < 0) return 0;
+  if(axisStickyIdx === axisPopIdx) return Math.max(axisPopStrength, 0.92);
+  return axisPopStrength;
+}
+function axisPopDrawRad(strength){
+  const t = ease(Math.min(1, Math.max(0, (strength - 0.06) / 0.94)));
+  return AXIS_POP_BASE_RAD + (AXIS_POP_TARGET_RAD - AXIS_POP_BASE_RAD) * t;
+}
+function axisPopTargetSizeMul(strength){
+  return axisPopDrawRad(strength) / AXIS_POP_BASE_RAD;
 }
 
 /* ---------- main update ---------- */
-function updateParticles(t){
+function updateParticles(t, dt){
   const p0=scrollProgress;
+  const onLanding = p0 < SEC.s1[0];
   /* Ripple energy decays each frame. 0.92^60 ≈ 0.007 → fully quiet within ~1s
      of cursor stillness. The constant radial push stays active independently. */
   pointer.energy *= 0.88;
@@ -1516,26 +1980,121 @@ function updateParticles(t){
   buildGutSlots();
   buildGarden();
 
+  const inAxisStream = p0 >= S2_BLEND_START && p0 < SEC.s3a[0];
+  const s2Morph = s2TransitionMorph(p0);
+  const s2MotionMul = s2StreamMotionMul(p0);
+  if(p0 < AXIS_ZONE_LO || p0 >= SEC.s3a[0]){
+    axisStreamPrimed = false;
+  } else if(inAxisStream){
+    primeAxisStream(t);
+    for(let i = 0; i < N; i++){
+      const pt = P[i];
+      initAxisStream(pt);
+      if(pt._axisOnStream && i !== axisStickyIdx) axisStepStreamU(pt, t, s2MotionMul);
+    }
+  }
+
+  const inAxisPhase = p0 >= SEC.s2[0] && p0 < SEC.s2[1];
+  axisPopIdx = -1;
+  axisPopStrength = 0;
+  axisActiveCallout = null;
+
+  if(!inAxisPhase || !pointer.active){
+    axisStickyIdx = -1;
+    axisStickyU = null;
+  } else {
+    const { halfW } = axisColumnGeom();
+    const { u, dist } = axisUFromPointer(pointer.x, pointer.y);
+
+    const glyphScreenPos = (idx, popLift = 0) => {
+      const pt = P[idx];
+      initAxisStream(pt);
+      const pathU = (idx === axisStickyIdx && axisStickyU !== null)
+        ? axisStickyU
+        : axisStreamU(pt, t);
+      const ct = axisPointAt(pathU, pt._axisLane);
+      return { x: ct.x + pt.hx, y: ct.y + pt.hy - popLift };
+    };
+
+    if(axisStickyIdx >= 0){
+      let sp = glyphScreenPos(axisStickyIdx);
+      let d = Math.hypot(sp.x - pointer.x, sp.y - pointer.y);
+      const strength = Math.max(0, 1 - d / (AXIS_GLYPH_HOVER_R * 1.65));
+      sp = glyphScreenPos(axisStickyIdx, strength * AXIS_POP_LIFT);
+      d = Math.hypot(sp.x - pointer.x, sp.y - pointer.y);
+      if(d <= AXIS_GLYPH_HOVER_R * 1.65){
+        axisPopIdx = axisStickyIdx;
+        axisPopStrength = 1 - d / (AXIS_GLYPH_HOVER_R * 1.65);
+      } else {
+        axisStickyIdx = -1;
+        axisStickyU = null;
+      }
+    }
+
+    if(axisStickyIdx < 0 && dist <= halfW * 5){
+      let bestD = Infinity;
+      for(let i = 0; i < N; i++){
+        const pt = P[i];
+        if(!pt._axisOnStream || pt.alpha < 0.12) continue;
+        const sp = glyphScreenPos(i);
+        const d = Math.hypot(sp.x - pointer.x, sp.y - pointer.y);
+        if(d < bestD){ bestD = d; axisPopIdx = i; }
+      }
+      if(axisPopIdx >= 0 && bestD <= AXIS_GLYPH_HOVER_R){
+        axisStickyIdx = axisPopIdx;
+        axisStickyU = axisStreamU(P[axisPopIdx], t);
+        axisPopStrength = 1 - bestD / AXIS_GLYPH_HOVER_R;
+      } else {
+        axisPopIdx = -1;
+        axisPopStrength = 0;
+      }
+    }
+
+    if(axisPopIdx >= 0 && axisPopStrength > 0.08 && dist <= halfW * 5){
+      axisActiveCallout = pickAxisFactForGlyph(axisPopIdx);
+    }
+  }
+
   const inStorm = (p0>=SEC.s4a[0] && p0<SEC.s4c[1]);
   const inRain = (p0>=SEC.s4c[0] && p0<SEC.s4c[1]);
+  const inS1Sphere = p0 >= SEC.s1[0] && p0 < S2_BLEND_START;
+  const s1SphereMorph = inS1Sphere
+    ? ease(Math.min(1, seg(p0, SEC.s1[0], SEC.s1[1]) / 0.62))
+    : 0;
+  const s1SphereFrame = inS1Sphere ? sphereFrame(t) : null;
 
   // Continuously remember the pre-storm resting pos (used to seed swirl)
   for(let idx=0; idx<N; idx++){
     const p=P[idx];
-    if(p0 < SEC.s1[0] || p0 >= SEC.s2[0]) p.sphereRgb = null;
+    if(p0 < SEC.s1[0] || p0 >= SEC.s3a[0]){
+      p.sphereRgb = null;
+      p._sphereHoverMix = 0;
+      p._sphereVividRgb = null;
+    }
+    if(p0 < AXIS_ZONE_LO || p0 >= SEC.s3a[0]){
+      p._axisReady = false;
+      p._axisStepT = undefined;
+      p._axisU = undefined;
+      p._axisFactId = undefined;
+      p._axisRespawn = false;
+      p._s2ScrollSync = false;
+    }
 
     // default visuals
     let targetAlpha=1, targetGray=0, sizeMul=1;
     let snapRain=false;
+    p._s2ScrollSync = false;
 
-    if(p0 < SEC.s1[0]){                       /* S0 — grid + ambient bobbing (entice scroll) */
-      p.tx = p.gx + Math.cos(t*p.spd*0.7 + p.ph*1.3) * 2.6;
-      p.ty = p.gy + Math.sin(t*p.spd       + p.ph    ) * 4.5;
+    if(onLanding){                       /* S0 — grid + ambient bobbing (entice scroll) */
+      const bob = landingBobOffset(p, t);
+      p.tx = p.gx + bob.x;
+      p.ty = p.gy + bob.y;
+      p.x = p.tx;
+      p.y = p.ty;
     }
-    else if(p0 < SEC.s2[0]){                  /* S1 — 3D sphere cluster */
-      const u=seg(p0, SEC.s1[0], SEC.s1[1]);
-      const morph=ease(Math.min(1, u/0.62));
-      const frame = sphereFrame(t);
+    else if(p0 < S2_BLEND_START){             /* S1 — 3D sphere cluster */
+      const morph = s1SphereMorph;
+      const frame = s1SphereFrame;
       const ct=circleTarget(p, idx, t);
       const waveY = Math.sin(p.gx*0.012 + t*1.1)*22*(1-morph);
       p.tx = p.gx + (ct.x-p.gx)*morph;
@@ -1544,14 +2103,14 @@ function updateParticles(t){
       if(ct.alpha <= 0.02){
         targetAlpha = 0;
         sizeMul = 0.01;
-        p.sphereRgb = null;
+        p._sphereVividRgb = null;
       } else {
         if(ct.scale !== undefined) sizeMul = 1 + (ct.scale - 1) * morph;
         const shellSnap = morph > 0.5 ? ease(Math.min(1, (morph - 0.5) / 0.22)) : morph / 0.5;
         const dist = Math.hypot(p.x - ct.x, p.y - ct.y);
         const arrive = Math.max(0, 1 - dist / (frame.R * 1.5));
         if(ct.alpha !== undefined) targetAlpha = ct.alpha * shellSnap * Math.max(morph * 0.45, arrive);
-        p.sphereRgb = morph > 0.28 && ct.rgb ? ct.rgb : null;
+        p._sphereVividRgb = morph > 0.28 && ct.rgb ? ct.rgb : null;
       }
       // mouse interaction on the formed cluster
       if(morph>0.6 && pointer.active){
@@ -1560,23 +2119,63 @@ function updateParticles(t){
       }
       p.ty += Math.sin(t*p.spd+p.ph)*0.6*morph;
     }
-    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis */
-      const u=seg(p0, SEC.s2[0], SEC.s2[1]);
-      const a=ease(Math.min(1,u/0.5));
-      const ct=axisTarget(p, idx);
-      const from=circleTarget(p, idx, t);
-      p.tx=from.x+(ct.x-from.x)*a; p.ty=from.y+(ct.y-from.y)*a;
-      p.tx+=Math.cos(t*p.spd+p.ph)*1.4; p.ty+=Math.sin(t*p.spd+p.ph)*1.4;
+    else if(p0 < SEC.s3a[0]){                 /* S2 — gut-brain axis stream (+ S1 morph) */
+      initAxisStream(p);
+      const morph = s2Morph;
+      const motionMul = s2StreamMotionMul;
+      const spherePt = circleTarget(p, idx, t);
+      const sphereLive = spherePt.alpha > 0.02;
+
+      if(!p._axisOnStream){
+        if(morph < 1 && sphereLive){
+          p.tx = spherePt.x;
+          p.ty = spherePt.y;
+          targetAlpha *= spherePt.alpha * (1 - morph);
+        } else {
+          targetAlpha = 0;
+        }
+        p.sphereRgb = null;
+      } else {
+        const sticky = idx === axisStickyIdx && axisStickyU !== null;
+        const u = sticky ? axisStickyU : axisStreamU(p, t);
+        const pathAlpha = sticky ? 1 : axisStreamPathAlphaFor(p);
+        const streamPt = axisPointAt(u, p._axisLane);
+        const sx = sphereLive ? spherePt.x : p.x;
+        const sy = sphereLive ? spherePt.y : p.y;
+        const sphereA = sphereLive ? spherePt.alpha : 0;
+
+        if(morph < 1){
+          p.tx = sx + (streamPt.x - sx) * morph;
+          p.ty = sy + (streamPt.y - sy) * morph;
+          targetAlpha *= sphereA * (1 - morph) + pathAlpha * morph;
+          p._s2ScrollSync = true;
+        } else {
+          p.tx = streamPt.x;
+          p.ty = streamPt.y;
+          targetAlpha *= pathAlpha;
+          const snap = sticky || p._axisRespawn || pathAlpha < 0.04;
+          if(snap){
+            p.x = streamPt.x;
+            p.y = streamPt.y;
+            if(p._axisRespawn) p._axisRespawn = false;
+          }
+        }
+        p.sphereRgb = null;
+        if(idx === axisPopIdx && axisPopStrength > 0){
+          const pop = axisPopVisualStrength();
+          sizeMul = axisPopTargetSizeMul(pop);
+          p.ty -= pop * AXIS_POP_LIFT;
+        }
+      }
     }
     else if(p0 < SEC.s3b[1]){                 /* S3 — gut: bloom then decay */
       const isOutline = idx < outlineSlots.length;
       let slot;
       if(isOutline){ slot=outlineSlots[idx]; }
       else { const ii=(idx-outlineSlots.length)%Math.max(1,interiorSlots.length); slot=interiorSlots[ii]||{x:p.x,y:p.y}; }
-      // morph in from axis at start of s3a
       const u3a=seg(p0, SEC.s3a[0], SEC.s3a[1]);
       const a=ease(Math.min(1,u3a/0.7));
-      const from=axisTarget(p, idx);
+      const from = { x: p.x, y: p.y };
       p.tx=from.x+(slot.x-from.x)*a; p.ty=from.y+(slot.y-from.y)*a;
       if(!isOutline){
         // decay during s3b
@@ -1609,19 +2208,24 @@ function updateParticles(t){
     else { targetAlpha=0; }                    /* S5/S6 — grid particles gone */
 
     // ease toward target (the spec's lerp); storm uses tighter follow
+    const inS2 = p0 >= S2_BLEND_START && p0 < SEC.s3a[0];
     const stormEarly = inStorm && p0<SEC.s4a[0]+0.05;
-    const k = inRain ? 1 : inStorm ? (stormEarly ? 0.32 : 0.18) : 0.075;
+    const k = inRain ? 1 : inStorm ? (stormEarly ? 0.32 : 0.18)
+      : inS2 ? (0.35 + s2Morph * 0.45) : 0.075;
     if(snapRain){ p.x=p.tx; p.y=p.ty; }
-    else { p.x += (p.tx-p.x)*k; p.y += (p.ty-p.y)*k; }
-    p.alpha += (targetAlpha-p.alpha)*0.12;
+    else if(p._s2ScrollSync){ p.x=p.tx; p.y=p.ty; }
+    else if(!onLanding){ p.x += (p.tx-p.x)*k; p.y += (p.ty-p.y)*k; }
+    const alphaK = inS2 ? 0.32 : 0.12;
+    p.alpha += (targetAlpha-p.alpha)*alphaK;
     p.gray += (targetGray-p.gray)*0.12;
-    p.size += (sizeMul-p.size)*0.15;
+    const popSizeK = (p0 >= S2_BLEND_START && p0 < SEC.s3a[0] && idx === axisPopIdx && axisPopStrength > 0) ? 0.32 : 0.15;
+    p.size += (sizeMul-p.size)*popSizeK;
 
     /* Landing hover ripple — only on S0, decays back to 0 elsewhere.
        Combines a smooth radial push with a propagating sinusoidal wave so
        particles ride outward-moving rings rather than just retreating. */
     let thx = 0, thy = 0;
-    if(p0 < SEC.s1[0] && pointer.active && !PREFERS_REDUCED_MOTION){
+    if(onLanding && pointer.active && !PREFERS_REDUCED_MOTION){
       const dx = p.x - pointer.x;
       const dy = p.y - pointer.y;
       const d2 = dx*dx + dy*dy;
@@ -1641,7 +2245,7 @@ function updateParticles(t){
        contributes an expanding ring of outward push that decays over its life.
        The ring's wavefront is sharply localized (within WORD_RIPPLE_WIDTH px
        of waveR), so distant particles aren't affected until the wave reaches them. */
-    if(p0 < SEC.s1[0] && wordRipples.length > 0){
+    if(onLanding && wordRipples.length > 0){
       for(const r of wordRipples){
         const age = (nowMs - r.t0_ms) * 0.001;
         if(age >= WORD_RIPPLE_LIFE) continue;
@@ -1665,7 +2269,7 @@ function updateParticles(t){
        smooth radial push (like the cursor hover but anchored to text).
        Zones stack additively; the per-particle hx/hy easing naturally ramps
        this on/off as words appear and disappear. */
-    if(p0 < SEC.s1[0] && wordFieldsPx.length > 0){
+    if(onLanding && wordFieldsPx.length > 0){
       for(const r of wordFieldsPx){
         const dx = p.x - r.x, dy = p.y - r.y;
         const d2 = dx*dx + dy*dy;
@@ -1678,8 +2282,19 @@ function updateParticles(t){
         thy += (dy / d) * push;
       }
     }
-    p.hx += (thx - p.hx) * HOVER_EASE;
-    p.hy += (thy - p.hy) * HOVER_EASE;
+    p.hx = easeToward(p.hx, thx, HOVER_EASE, dt);
+    p.hy = easeToward(p.hy, thy, HOVER_EASE, dt);
+
+    if(s1SphereFrame && p._sphereVividRgb){
+      const hoverMix = spherePointerColorMix(
+        p.x + p.hx, p.y + p.hy, s1SphereMorph, s1SphereFrame
+      );
+      p._sphereHoverMix = hoverMix;
+      p.sphereRgb = mix(SPHERE_INK_RGB, hoverMix, p._sphereVividRgb);
+    } else if(inS1Sphere){
+      p._sphereHoverMix = 0;
+      p.sphereRgb = p._sphereVividRgb ? mix(SPHERE_INK_RGB, 0, p._sphereVividRgb) : null;
+    }
 
     if(p0<SEC.s4a[0]){
       p._sr=undefined; p._sa=undefined; p._frozenX=undefined; p._frozenY=undefined; p._land=undefined;
@@ -1747,20 +2362,162 @@ function drawGarden(t){
   ctx.globalAlpha=1;
 }
 
-/* axis hover labels (S2) */
-const AXIS_LABELS=['gut microbes','vagus nerve','serotonin precursors','inflammation markers','mood signal'];
+/* axis hover — verified gut→brain facts (one unique fact per stream glyph) */
+const AXIS_FACTS = [
+  { title: 'your microbiome', sub: 'your intestines host trillions of microbes that exchange chemical signals with gut cells .', side: 'left' },
+  { title: 'two-way signaling', sub: 'the gut–brain axis is bidirectional — signals travel from gut to brain and brain to gut .', side: 'left' },
+  { title: 'the vagus nerve', sub: 'the vagus nerve carries sensory information from the gut to the brain , and motor signals back .', side: 'left' },
+  { title: 'serotonin in the gut', sub: 'most serotonin in the body is synthesized in the gi tract — mainly by enterochromaffin cells .', side: 'left' },
+  { title: 'microbes & serotonin', sub: 'gut microbes can modulate host serotonin pathways , both directly and through metabolites they produce .', side: 'right' },
+  { title: 'short-chain fatty acids', sub: 'bacterial fermentation produces scfas — metabolites studied as signals along the microbiota–gut–brain axis .', side: 'right' },
+  { title: 'local gut reflexes', sub: 'in the intestine , enteric neurons form reflex circuits that can coordinate function with limited brain input .', side: 'right' },
+  { title: 'many pathways', sub: 'gut–brain communication involves neural , endocrine , immune , and microbial routes working together .', side: 'right' },
+];
+function pickAxisFactForGlyph(idx){
+  const p = P[idx];
+  initAxisStream(p);
+  const id = p._axisFactId ?? Math.floor(hash2(p.i + 29, p.j + 41) * AXIS_FACTS.length);
+  return AXIS_FACTS[id % AXIS_FACTS.length];
+}
+function axisPopGlyphPos(){
+  if(axisPopIdx < 0 || axisPopStrength <= 0.08) return null;
+  return axisPopScreenCenter(P[axisPopIdx]);
+}
+function circleRectOverlap(cx, cy, r, rx, ry, rw, rh){
+  const nx = Math.max(rx, Math.min(cx, rx + rw));
+  const ny = Math.max(ry, Math.min(cy, ry + rh));
+  return Math.hypot(cx - nx, cy - ny) < r + 10;
+}
+function buildAxisLeader(gx, gy, boxLeft, boxTop, boxW, boxH, side, glyphPad){
+  const startR = 14 + (glyphPad ? axisPopStrength * 10 : 0);
+  const tipY = boxTop + boxH * 0.5;
+  if(side === 'left'){
+    const tipX = boxLeft + boxW;
+    const startX = gx - startR;
+    if(Math.abs(tipY - gy) < 3){
+      return [{ x: startX, y: gy }, { x: tipX, y: gy }];
+    }
+    const elbowX = tipX;
+    return [
+      { x: startX, y: gy },
+      { x: elbowX, y: gy },
+      { x: elbowX, y: tipY },
+    ];
+  }
+  if(side === 'right'){
+    const tipX = boxLeft;
+    const startX = gx + startR;
+    if(Math.abs(tipY - gy) < 3){
+      return [{ x: startX, y: gy }, { x: tipX, y: gy }];
+    }
+    const elbowX = tipX;
+    return [
+      { x: startX, y: gy },
+      { x: elbowX, y: gy },
+      { x: elbowX, y: tipY },
+    ];
+  }
+  const tipX = boxLeft + (gx < boxLeft + boxW * 0.5 ? 0 : boxW);
+  const startX = gx + (tipX > gx ? startR : -startR);
+  if(Math.abs(tipY - gy) < 3){
+    return [{ x: startX, y: gy }, { x: tipX, y: gy }];
+  }
+  return [
+    { x: startX, y: gy },
+    { x: tipX, y: gy },
+    { x: tipX, y: tipY },
+  ];
+}
+function placeAxisAnnot(callout, glyph, spine){
+  const margin = 14;
+  const gap = 18;
+  const glyphPad = glyph ? Math.max(18, axisPopDrawRad(axisPopVisualStrength()) * 2.2) : 0;
+  annot.innerHTML =
+    `<span class="annot-title">${callout.title}</span>` +
+    (callout.sub ? `<span class="annot-sub">${callout.sub}</span>` : '');
+  annot.style.transform = 'none';
+  annot.style.right = 'auto';
+  annot.style.visibility = 'hidden';
+  annot.classList.add('show');
+  const boxW = annot.offsetWidth;
+  const boxH = annot.offsetHeight;
+  annot.style.visibility = '';
+  const mobile = W <= 768;
+  const gx = glyph ? glyph.x : spine.x;
+  const gy = glyph ? glyph.y : spine.y;
+  let left, top, side;
+  const yAligned = gy - boxH * 0.5;
+  if(mobile){
+    const roomLeft = gx - margin - gap;
+    const roomRight = W - margin - gx - gap;
+    if(roomRight >= boxW || roomRight >= roomLeft){
+      side = 'right';
+      left = gx + gap;
+    } else {
+      side = 'left';
+      left = gx - boxW - gap;
+    }
+    top = yAligned;
+  } else if(callout.side === 'left'){
+    side = 'left';
+    left = gx - boxW - gap;
+    top = yAligned;
+  } else {
+    side = 'right';
+    left = gx + gap;
+    top = yAligned;
+  }
+  left = Math.max(margin, Math.min(W - margin - boxW, left));
+  top = Math.max(margin, Math.min(H - margin - boxH, top));
+  if(glyph){
+    if(side === 'left' && left + boxW + gap > gx){
+      side = 'right';
+      left = Math.min(W - margin - boxW, gx + gap);
+    } else if(side === 'right' && left < gx + gap){
+      side = 'left';
+      left = Math.max(margin, gx - boxW - gap);
+    }
+    for(let i = 0; i < 10 && circleRectOverlap(gx, gy, glyphPad, left, top, boxW, boxH); i++){
+      if(side === 'left'){
+        left = Math.max(margin, left - 16);
+        if(left + boxW + gap > gx) top = Math.max(margin, top - 12);
+      } else {
+        left = Math.min(W - margin - boxW, left + 16);
+        if(left < gx + gap) top = Math.max(margin, top - 12);
+      }
+      top = Math.max(margin, Math.min(H - margin - boxH, top));
+      left = Math.max(margin, Math.min(W - margin - boxW, left));
+    }
+    if(circleRectOverlap(gx, gy, glyphPad, left, top, boxW, boxH)){
+      top = gy - boxH - gap - glyphPad;
+      if(top < margin) top = gy + gap + glyphPad;
+      top = Math.max(margin, Math.min(H - margin - boxH, top));
+    }
+  }
+  annot.style.left = left + 'px';
+  annot.style.top = top + 'px';
+  annot._ax = gx;
+  annot._ay = gy;
+  annot._side = side;
+  annot._boxW = boxW;
+  annot._boxH = boxH;
+  annot._leader = buildAxisLeader(gx, gy, left, top, boxW, boxH, side, glyphPad);
+}
 function handleAxisHover(){
   const p0=scrollProgress;
-  if(p0<SEC.s2[0]+0.02 || p0>=SEC.s2[1] || !pointer.active){ annot.classList.remove('show'); return; }
-  const cx=W*0.5;
-  if(Math.abs(pointer.x-cx) > Math.min(W,H)*0.18){ annot.classList.remove('show'); return; }
-  const band=Math.min(AXIS_LABELS.length-1, Math.floor((pointer.y/H)*AXIS_LABELS.length));
-  annot.textContent=AXIS_LABELS[band];
-  annot.style.left=(pointer.x+70)+'px';
-  annot.style.top=pointer.y+'px';
-  annot.classList.add('show');
-  // leader line drawn in render
-  annot._lx=pointer.x; annot._ly=pointer.y;
+  if(p0<SEC.s2[0] || p0>=SEC.s2[1] || !pointer.active || !axisActiveCallout){
+    annot.classList.remove('show');
+    return;
+  }
+  const callout = axisActiveCallout;
+  const glyph = axisPopGlyphPos();
+  let spine;
+  if(axisStickyIdx >= 0 && axisStickyU !== null){
+    spine = axisSpine(axisStickyU);
+  } else {
+    spine = axisSpine(axisUFromPointer(pointer.x, pointer.y).u);
+  }
+  placeAxisAnnot(callout, glyph, spine);
 }
 
 /* ---------- copy fade ---------- */
@@ -1794,8 +2551,12 @@ function updateCopy(){
 
 /* ---------- render ---------- */
 const t0=performance.now();
+let lastFrameMs = t0;
 function frame(){
-  const t=(performance.now()-t0)*0.001;
+  const nowMs = performance.now();
+  const dt = Math.min(0.05, (nowMs - lastFrameMs) * 0.001);
+  lastFrameMs = nowMs;
+  const t = (nowMs - t0) * 0.001;
   const p0=scrollProgress;
   ctx.clearRect(0,0,W,H);
 
@@ -1805,7 +2566,7 @@ function frame(){
 
   // background lattice crossfades
   const lineA = 1-seg(p0, SEC.s1[0]+0.04, SEC.s2[0]);          // lines fade out through S1
-  const dotA  = seg(p0, SEC.s2[0]-0.02, SEC.s2[0]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0]+0.02));
+  const dotA  = seg(p0, SEC.s2[1], SEC.s2[1]+0.03) * (1-seg(p0, SEC.s4a[0]-0.02, SEC.s4a[0]+0.02));
   const inStormPhase = p0>=SEC.s4a[0] && p0<SEC.s4c[1];
   const stormDotA = inStormPhase ? 1-seg(p0, SEC.s4c[0]+0.55, SEC.s4c[1])*0.9 : 0;
   const rainProg = seg(p0, SEC.s4c[0], SEC.s4c[1]);
@@ -1821,11 +2582,25 @@ function frame(){
   if(stormDotA>0.01) drawStormGridDots(t, p0, stormDotA);
   if(isoA>0.01){ drawGroundEmergence(isoA); drawIsoFloor(isoA); }
 
-  const phase=updateParticles(t);
+  const phase=updateParticles(t, dt);
+  handleAxisHover();
 
   // draw particles (skip when fully in garden phase & gone)
   if(p0 < SEC.s5a[0]+0.02){
-    const spherePhase = p0 >= SEC.s1[0] && p0 < SEC.s2[0];
+    const spherePhase = p0 >= SEC.s1[0] && p0 < S2_BLEND_START;
+    const inAxisDraw = p0 >= S2_BLEND_START && p0 < SEC.s3a[0];
+    const s2MorphDraw = s2TransitionMorph(p0);
+    if(inAxisDraw && annot.classList.contains('show') && annot._leader){
+      ctx.strokeStyle = 'rgba(30, 30, 30, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      const pts = annot._leader;
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for(let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    }
+    const isLandingDraw = p0 < SEC.s1[0];
     if(spherePhase){
       const { clouds } = collectSphereDecorDrawList(t, p0);
 
@@ -1850,25 +2625,39 @@ function frame(){
       /* 2 — atmospheric clouds in front */
       for(const c of clouds.filter(d => d.z > 0.05)) drawDecor(c);
     } else {
-      for(let idx = 0; idx < N; idx++){
+      const drawOrder = inAxisDraw
+        ? Array.from({ length: N }, (_, i) => i).filter(i => P[i].alpha > 0.02)
+        : null;
+      const indices = drawOrder || Array.from({ length: N }, (_, i) => i);
+      const popActive = inAxisDraw && axisPopIdx >= 0 && axisPopVisualStrength() > 0.04;
+      for(const idx of indices){
         const p = P[idx];
         if(p.alpha < 0.02) continue;
-        const baseR = 6.0;
-        drawParticle(p, p.x + p.hx, p.y + p.hy, baseR * p.size, p.alpha);
+        if(inAxisDraw && !p._axisOnStream && s2MorphDraw >= 0.35) continue;
+        if(popActive && idx === axisPopIdx) continue;
+        const drawY = p.y + p.hy;
+        const drawX = p.x + p.hx;
+        const drawRad = 6.0 * p.size;
+        if(isLandingDraw){
+          drawLandingParticle(p, drawX, drawY, drawRad, p.alpha);
+        } else if(inAxisDraw){
+          drawParticle(p, drawX, drawY, drawRad, p.alpha, true);
+        } else {
+          drawParticle(p, drawX, drawY, drawRad, p.alpha);
+        }
+      }
+      if(popActive){
+        const pop = P[axisPopIdx];
+        const popVis = axisPopVisualStrength();
+        const center = axisPopScreenCenter(pop);
+        const drawRad = axisPopDrawRad(popVis);
+        drawAxisPopGlyph(pop, center.x, center.y, drawRad, pop.alpha);
       }
     }
   }
 
   if(p0>=SEC.s3b[0] && p0<SEC.s4a[0]) drawGutBlocks();
   drawGarden(t);
-
-  // axis hover leader line
-  handleAxisHover();
-  if(annot.classList.contains('show')){
-    ctx.strokeStyle='rgba(60,60,60,0.4)'; ctx.lineWidth=0.5;
-    ctx.beginPath(); ctx.moveTo(annot._lx,annot._ly); ctx.lineTo(annot._lx+62,annot._ly); ctx.stroke();
-    ctx.fillStyle='rgba(60,60,60,0.7)'; ctx.beginPath(); ctx.arc(annot._lx,annot._ly,2,0,Math.PI*2); ctx.fill();
-  }
 
   updateCopy();
   requestAnimationFrame(frame);
@@ -1884,24 +2673,47 @@ function setupJourney(){
   journeyFg.style.strokeDashoffset = journeyLen;
 }
 setupJourney();
+function journeyProgressAt(p){
+  /* Map linear scroll to narrative position on the Gut↔Brain path.
+     S1 occupies ~48% of scroll but is early in the story — without this,
+     the rail fills too quickly and reads ahead of where the user actually is. */
+  const JOURNEY_KEYS = [
+    { p: 0,            j: 0    },
+    { p: SEC.s0[1],    j: 0.14 },
+    { p: SEC.s1[1],    j: 0.30 },
+    { p: SEC.s2[1],    j: 0.44 },
+    { p: SEC.s3b[1],   j: 0.58 },
+    { p: SEC.s4c[1],   j: 0.74 },
+    { p: SEC.s5a[0],   j: 0.88 },
+    { p: 1,            j: 1    },
+  ];
+  if(p <= JOURNEY_KEYS[0].p) return JOURNEY_KEYS[0].j;
+  for(let i = 1; i < JOURNEY_KEYS.length; i++){
+    if(p <= JOURNEY_KEYS[i].p){
+      const a = JOURNEY_KEYS[i - 1], b = JOURNEY_KEYS[i];
+      const tt = (p - a.p) / (b.p - a.p);
+      const k = tt * tt * (3 - 2 * tt);
+      return a.j + (b.j - a.j) * k;
+    }
+  }
+  return 1;
+}
 function updateJourney(){
   if(!journeyFg || !journeyLen) return;
-  journeyFg.style.strokeDashoffset = journeyLen * (1 - scrollProgress);
+  journeyFg.style.strokeDashoffset = journeyLen * (1 - journeyProgressAt(scrollProgress));
 }
 
 /* ---------- background mood arc ----------
-   Cream by default. Subtly cools toward moody gray-sage through the menopause
-   storm sections, then resolves back to cream by the garden. The darkest
-   point stays light enough (RGB ~160) to keep Katarina's all-black storm
-   typography readable (~6:1 contrast). */
+   Near-white by default. Holds white through S2/S3 (gut-brain + menopause),
+   then cools toward moody gray-sage for the storm sections, resolves back
+   to cream by the garden. */
 const BG_KEYS = [
   { p: 0.00, c: [252, 253, 254] }, // near-white, faint cool cast — landing (Maddi)
-  { p: 0.54, c: [252, 253, 254] }, // hold through axis (still Maddi's section)
-  { p: 0.62, c: [220, 226, 215] }, // pale sage — entering "hard to read"
-  { p: 0.70, c: [180, 186, 175] }, // gray-sage
-  { p: 0.76, c: [158, 165, 158] }, // moody — peak of the storm
-  { p: 0.86, c: [188, 200, 178] }, // sage relief — post-rain
-  { p: 0.96, c: [218, 232, 208] }, // light garden green
+  { p: 0.54, c: [252, 253, 254] }, // hold through Maddi's section
+  { p: 0.96, c: [252, 253, 254] }, // hold white through S2/S3 (gut-brain + menopause)
+  { p: 0.978, c: [158, 165, 158] }, // moody — storm peak (Katarina)
+  { p: 0.992, c: [188, 200, 178] }, // sage relief — post-rain
+  { p: 0.999, c: [218, 232, 208] }, // light garden green
   { p: 1.00, c: [252, 253, 254] },
 ];
 function bgColorAt(p){
@@ -1932,7 +2744,7 @@ function updateBackground(){
 const modalContent = {
   about: `<h2>about</h2>
 <p>a scroll-driven visualization of the gut–brain axis and its quiet role during menopause .</p>
-<p>made by <em>madeleine</em> , <em>catherine</em> , and <em>katarina</em> · 2026</p>`,
+<p>made by <em>catherine</em> , <em>katarina</em> , and <em>madeleine</em> · 2026</p>`,
   background: `<h2>background</h2>
 <p>around 90% of serotonin is produced in the gut . gut microbes help regulate its production .</p>
 <p>more than a billion women will be in menopause globally by 2030 . 20% of working women experience a loss of confidence during the transition .</p>
@@ -1950,7 +2762,43 @@ function closeModal(){
   document.body.style.overflow = '';
 }
 document.querySelectorAll('.navlink').forEach(btn => {
-  btn.addEventListener('click', () => openModal(btn.dataset.modal));
+  btn.addEventListener('click', () => {
+    openModal(btn.dataset.modal);
+    closeMobileMenu();
+  });
+});
+
+/* Mobile header menu */
+const siteHeader = document.querySelector('.site-header');
+const menuToggle = document.getElementById('menu-toggle');
+function closeMobileMenu(){
+  if(!siteHeader || !menuToggle) return;
+  siteHeader.classList.remove('menu-open');
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.setAttribute('aria-label', 'Open menu');
+}
+function toggleMobileMenu(){
+  if(!siteHeader || !menuToggle) return;
+  const open = siteHeader.classList.toggle('menu-open');
+  menuToggle.setAttribute('aria-expanded', String(open));
+  menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+}
+if(menuToggle){
+  menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMobileMenu();
+  });
+}
+document.addEventListener('click', (e) => {
+  if(siteHeader?.classList.contains('menu-open') &&
+     !e.target.closest('.site-header .actions')){
+    closeMobileMenu();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && siteHeader?.classList.contains('menu-open')){
+    closeMobileMenu();
+  }
 });
 modal.addEventListener('click', e => {
   if(e.target.dataset.close !== undefined) closeModal();
@@ -1959,20 +2807,15 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape' && modal.dataset.open) closeModal();
 });
 
-/* Begin CTA — smooth scroll to the start of the landing ("your body is
-   sending signals ."). Target scrollProgress ≈ 0.03 — just past that
-   line's data-in (0.015) so it has faded in fully, but before the next
-   landing line ("many of them start in the gut ;") begins appearing at 0.04.
-   Effect: clicking Begin always settles the user on the lead line. */
-const beginCta = document.getElementById('begin-cta');
-if(beginCta){
-  beginCta.addEventListener('click', () => {
-    const max = scrollEl.scrollHeight - window.innerHeight;
-    const targetProgress = 0.03;
-    const target = max * targetProgress;
-    const behavior = PREFERS_REDUCED_MOTION ? 'auto' : 'smooth';
-    window.scrollTo({ top: target, left: 0, behavior });
-  });
+/* Scroll cue — smooth scroll to the start of the landing copy. */
+function scrollToProgress(progress){
+  const max = scrollEl.scrollHeight - window.innerHeight;
+  const target = max * progress;
+  const behavior = PREFERS_REDUCED_MOTION ? 'auto' : 'smooth';
+  window.scrollTo({ top: target, left: 0, behavior });
+}
+if(cue){
+  cue.addEventListener('click', () => scrollToProgress(0.03));
 }
 
 /* Header anchors — clicking the brand or "Brain" jumps to the top of the
@@ -2000,7 +2843,12 @@ bindHeaderAnchor('brain-link', 'top');
 bindHeaderAnchor('gut-link',   'bottom');
 
 /* ---------- boot ---------- */
-window.addEventListener('resize', ()=>{ resize(); updateScroll(); });
+window.addEventListener('resize', ()=>{
+  resize();
+  updateScroll();
+  setupJourney();
+  if(window.innerWidth > 768) closeMobileMenu();
+});
 resize();
 updateScroll();
 requestAnimationFrame(frame);
