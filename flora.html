@@ -776,7 +776,7 @@ are invisible .</div>
     <div class="t sm work" data-in="0.361" data-out="0.383" style="bottom:5%; right:6%; text-align:right; max-width:300px;">what the science says : ~90% of serotonin is produced in the gut . gut microbes help regulate its production .</div>
 
     <!-- S3 — Catherine -->
-    <div class="t lg work" data-in="0.42" data-out="0.517" style="top:9%; left:6%;">during menopause,
+    <div class="t lg work" data-in="0.47" data-out="0.529" style="top:9%; left:6%;">during menopause,
 they become hard to read.</div>
     <div class="t md work" data-in="0.532" data-out="0.578" style="top:11%; left:50%; max-width:38%; white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
 
@@ -2794,19 +2794,75 @@ function updateParticlesMain(t, p0){
         }
       }
     }
-    else if(p0 < MAIN_SEC.s3b[1]){                 /* S3 — gut: bloom then decay */
+    else if(p0 < MAIN_SEC.s3b[1]){                 /* S3 — gut: bloom, gray, then cluster spread (p0 here is pM) */
+      forceGlyph=true;                             // interior always flowers
       const ii=idx%Math.max(1,interiorSlots.length);
       const slot=interiorSlots[ii]||{x:p.x,y:p.y};
-      const u3a=seg(p0, MAIN_SEC.s3a[0], MAIN_SEC.s3a[1]);
-      const a=ease(Math.min(1,u3a/0.7));
-      const from=axisTarget(p, idx);
-      p.tx=from.x+(slot.x-from.x)*a; p.ty=from.y+(slot.y-from.y)*a;
-      forceGlyph=true;
-      if(p0>=MAIN_SEC.s3b[0]){
-        const d=seg(p0, MAIN_SEC.s3b[0], MAIN_SEC.s3b[1]);
-        targetGray=ease(seg(d, 0.0, 0.48));
-        const startStagger=0.30+p.dieAt*0.28;
-        targetAlpha=1-ease(seg(d, startStagger, startStagger+0.15));
+
+      if(p0 < 0.552){
+        // fill + desaturate: flowers wander FLUIDLY across the whole stomach interior
+        p._clFrom=undefined;                       // re-seed the spread arc if we scroll back up
+        const u3a=seg(p0, MAIN_SEC.s3a[0], MAIN_SEC.s3a[1]);
+        const a=ease(Math.min(1,u3a/0.7));
+        const from=axisTarget(p, idx);
+        // gentle INDEPENDENT floating around each flower's slot (no coherent flow field,
+        // so it reads as a calm swarm rather than a storm/current); contained by gutInside
+        const amp=Math.min(W,H)*0.028;
+        const dx=Math.cos(t*0.5+p.ph)*amp + Math.cos(t*0.33+p.ph*2.7)*amp*0.5;
+        const dy=Math.sin(t*0.5+p.ph*1.4)*amp + Math.sin(t*0.29+p.ph*1.9)*amp*0.5;
+        let sx=slot.x+dx, sy=slot.y+dy;
+        if(!gutInside(sx,sy)){ sx=slot.x; sy=slot.y; }   // never cross the outline
+        p.tx=from.x+(sx-from.x)*a; p.ty=from.y+(sy-from.y)*a;
+        // desaturate EARLY so the transition to greyscale is COMPLETE just as the
+        // "during menopause" copy appears (copy data-in 0.47 ≈ pM 0.496)
+        targetGray=ease(seg(p0, 0.465, 0.49));
+      } else {
+        // CLUSTER SPREAD (pM 0.552 → 0.594): SLOW circular motion into clustered colored
+        // circles — forms gradually so the viewer has time to read the copy and connect it
+        // to the visual. The formed, spread-out circles then hold into the storm.
+        const L=clusterLayout();
+        const ctrX=W*0.5, ctrY=H*0.52;
+        if(p._cl===undefined){
+          const list=clustersByColor[p.ci] || clustersByColor[0];
+          p._cl=list[idx % list.length];
+        }
+        if(p._clFrom===undefined){
+          p._clFromR=Math.hypot(p.x-ctrX, p.y-ctrY);
+          p._clFromA=Math.atan2(p.y-ctrY, p.x-ctrX);
+          p._clFrom=1;
+        }
+        const cl=CLUSTER_FIELD[p._cl];
+        const cpos=clusterPos(cl, L);
+        const tgt=clusterLocalTarget(idx, cl, cpos, L);
+
+        // slow polar interpolation (angle + radius) around screen center → gentle arc
+        const sp=ease(seg(p0, 0.552, 0.594));
+        const toR=Math.hypot(tgt.x-ctrX, tgt.y-ctrY);
+        const toA=Math.atan2(tgt.y-ctrY, tgt.x-ctrX);
+        let dA=toA-p._clFromA;
+        while(dA> Math.PI) dA-=Math.PI*2;          // shortest angular path
+        while(dA<-Math.PI) dA+=Math.PI*2;
+        const curR=p._clFromR+(toR-p._clFromR)*sp;
+        const curA=p._clFromA+dA*sp;
+        let clx=ctrX+Math.cos(curA)*curR;
+        let cly=ctrY+Math.sin(curA)*curR;
+
+        // settle into a SPREAD circle; some flowers keep a slow, wide orbit within it
+        const orbit=hash2(idx+2, p._cl+50) < 0.5;
+        let fX, fY;
+        if(orbit){
+          const oR=clusterRadius(cl, L)*0.62;      // wide orbit radius → spread within circle
+          const oa=t*p.spd*0.3+p.ph;               // slow orbit
+          fX=cpos.x+Math.cos(oa)*oR;
+          fY=cpos.y+Math.sin(oa)*oR;
+        } else {
+          fX=tgt.x; fY=tgt.y;
+        }
+        p.tx=clx+(fX-clx)*sp;
+        p.ty=cly+(fY-cly)*sp;
+
+        // recolor: ramp gray back to 0 as they spread → colorful again (stays colorful into storm)
+        targetGray=1-sp;
       }
     }
     else if(inStorm){                         /* S4 — storm / freeze / rain */
@@ -2903,6 +2959,87 @@ function blockBasePos(blk, L){
   const gc = blk.col - L.centerCol + blk.jx;
   const gr = blk.row - L.centerRow + blk.jy;
   return { x: L.originX + gc*L.sax + gr*L.sbx, y: L.originY + gc*L.say + gr*L.sby };
+}
+
+/* ---------- cluster field (replaces the cubes for "more than a billion women") ----------
+   Deterministic clusters of filled colored circles scattered across the cube region
+   (~W*0.5, H*0.52). Positions stored NORMALIZED (offset from region center) and resolved
+   in clusterPos() so they survive resize — mirrors blockLayout/blockBasePos. */
+const CLUSTER_GC = 6, CLUSTER_GR = 4;             // 6×4 grid of non-overlapping circles
+const CLUSTER_COUNT = CLUSTER_GC * CLUSTER_GR;    // 24
+const CLUSTER_FIELD = (function(){
+  const arr = [];
+  for(let n=0; n<CLUSTER_COUNT; n++){
+    const col = n % CLUSTER_GC, row = Math.floor(n / CLUSTER_GC);
+    const h  = hash2(n+11, 3);
+    const h2 = hash2(n+29, 7);
+    const h4 = hash2(n+17, 23);
+    // guarantee every palette color 0..7 appears (first 8 cells), rest hashed
+    const ci = n < PALETTE.length ? n : Math.floor(h * PALETTE.length) % PALETTE.length;
+    arr.push({
+      ci, col, row,
+      sizeV: 0.5 + h4 * 0.5,                       // per-circle size variety (0.5..1.0)
+      jx: (hash2(n+3, 88) - 0.5) * 0.10,           // small in-cell jitter (fraction of a cell)
+      jy: (hash2(n+63, 9) - 0.5) * 0.10,
+      ph: h * Math.PI * 2, spd: 0.4 + h2 * 0.6
+    });
+  }
+  return arr;
+})();
+const clustersByColor = (function(){
+  const m = Array.from({length: PALETTE.length}, ()=>[]);
+  CLUSTER_FIELD.forEach((cl, n)=> m[cl.ci].push(n));
+  return m;
+})();
+// Bounded frame BELOW the copy, inset from the sides, so circles never sit above the
+// text or run off the edges. Circles are placed on a grid → they never overlap.
+function clusterLayout(){
+  const x0=W*0.15, x1=W*0.85, y0=H*0.30, y1=H*0.93;
+  const cellW=(x1-x0)/CLUSTER_GC, cellH=(y1-y0)/CLUSTER_GR;
+  return { x0, y0, x1, y1, cellW, cellH, cell:Math.min(cellW, cellH) };
+}
+function clusterPos(cl, L){
+  return {
+    x: L.x0 + (cl.col + 0.5 + cl.jx) * L.cellW,
+    y: L.y0 + (cl.row + 0.5 + cl.jy) * L.cellH
+  };
+}
+// Radius capped to the cell (leaving a jitter margin) so adjacent circles never overlap.
+function clusterRadius(cl, L){
+  const maxR = L.cell * 0.40;
+  return maxR * (0.62 + cl.sizeV * 0.38);
+}
+function clusterLocalTarget(idx, cl, cpos, L){
+  const R = clusterRadius(cl, L);
+  const localR = R * 0.9 * Math.sqrt(hash2(idx+1, 100));   // flowers spread within the circle
+  const localA = hash2(idx+3, 200) * Math.PI * 2;
+  return { x: cpos.x + Math.cos(localA)*localR, y: cpos.y + Math.sin(localA)*localR };
+}
+// Filled lighter-tint circle under each cluster; radius grows with settled count + prog.
+function drawClusterField(prog, alpha, t){
+  if(alpha <= 0.01) return;
+  const L = clusterLayout();
+  // STABLE membership count per cluster (assigned particles, not a per-frame proximity test)
+  // so the background circles don't pulse as flowers orbit in and out of a radius.
+  const counts = new Array(CLUSTER_FIELD.length).fill(0);
+  for(let idx=0; idx<N; idx++){
+    const cn = P[idx]._cl;
+    if(cn !== undefined) counts[cn]++;
+  }
+  const e = ease(prog);
+  for(let n=0; n<CLUSTER_FIELD.length; n++){
+    const cnt = counts[n];
+    if(cnt <= 0) continue;
+    const cl = CLUSTER_FIELD[n];
+    const cpos = clusterPos(cl, L);
+    const tint = mix(PAL_RGB[cl.ci], 0.6, [255,255,255]);   // lighter background of the area
+    // cell-capped radius (stable, non-overlapping) grows in with the formation
+    const r = clusterRadius(cl, L) * e;
+    ctx.globalAlpha = alpha * 0.35;
+    ctx.fillStyle = rgbStr(tint[0], tint[1], tint[2]);
+    ctx.beginPath(); ctx.arc(cpos.x, cpos.y, r, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 function drawDiamondGrid(formProg, fadeOut, t){
   buildGutSlots();
@@ -3087,18 +3224,23 @@ function frame(){
     if(copyRoot) copyRoot.classList.toggle('storm-dark', dark > 0.38);
 
     const condense = Math.min(1, Math.max(0, (pM - 0.435) / 0.08));
-    const diamond = Math.min(1, Math.max(0, (pM - 0.532) / 0.024));
-    const blocks = Math.min(1, Math.max(0, (pM - 0.552) / 0.048));
     const condenseFade = 1 - seg(pM, 0.512, 0.538);
-    const diamondForm = seg(pM, 0.532, 0.556);
-    const diamondFade = 1 - seg(pM, 0.560, 0.590);
-    const blockGrow = seg(pM, 0.552, 0.600);
+    // CUBE MECHANISM (disabled — replaced by circular-motion cluster spread).
+    // Reversible: re-enable these + the draw calls below to restore cubes.
+    // const diamondForm = seg(pM, 0.532, 0.556);
+    // const diamondFade = 1 - seg(pM, 0.560, 0.590);
+    // const blockGrow = seg(pM, 0.552, 0.600);
+    // clustered colored circles grow in slowly as the clusters form, then hold
+    const clusterProg = seg(pM, 0.552, 0.594);
 
-    if(condense > 0.01 && condenseFade > 0.01) drawGutCondense(condense, t, condenseFade);
-    if(diamondForm > 0.01 && diamondFade > 0.01) drawDiamondGrid(diamondForm, diamondFade, t);
-    if(pM >= MAIN_SEC.s3b[0] && pM < MAIN_SEC.s4a[0]){
-      const blockA = 1 - seg(pM, MAIN_SEC.s4a[0]-0.012, MAIN_SEC.s4a[0]);
-      if(blockGrow > 0 && blockA > 0.01) drawBlockField(blockGrow, blockA, t);
+    // Background condense/outline dots disabled for the stomach scene (no background dots).
+    // Reversible: re-enable to restore the gut-formation dots.
+    // if(condense > 0.01 && condenseFade > 0.01) drawGutCondense(condense, t, condenseFade);
+    // if(diamondForm > 0.01 && diamondFade > 0.01) drawDiamondGrid(diamondForm, diamondFade, t);
+    // clustered colored circles sit UNDER the flowers (drawn before the particle loop below)
+    if(clusterProg > 0.01 && pM >= MAIN_SEC.s3b[0] && pM < MAIN_SEC.s4a[0]){
+      const clusterA = 1 - seg(pM, MAIN_SEC.s4a[0]-0.012, MAIN_SEC.s4a[0]);
+      if(clusterA > 0.01) drawClusterField(clusterProg, clusterA, t);
     }
     if(stormBgDark(pM, rp) > 0.05) drawS4GridDots(t, pM, rp);
     const isoBase = pM >= MAIN_SEC.s4r[0] ? ease(Math.min(1, rp*1.2)) : 0;
