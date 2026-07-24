@@ -2283,7 +2283,10 @@ function buildGarden(){
 /* draw one particle — glyph mode */
 function drawParticle(p, x, y, rad, alpha, rgbOverride){
   if(alpha<=0.01) return;
-  let c=rgbOverride||PAL_RGB[p.ci];
+  // Only honour rgbOverride when it's an actual [r,g,b] (the cluster single-colour override).
+  // Some callers pass a boolean (legacy noShadow flag) — ignore that so those glyphs keep
+  // their normal palette colour (e.g. the S2 gut-brain axis stays colourful, not charcoal).
+  let c=(Array.isArray(rgbOverride)?rgbOverride:null)||PAL_RGB[p.ci];
   if(p.gray>0){
     // Grayscale glyph look borrowed from the S1 "scientifically speaking" sphere:
     // a monochrome ink field where each glyph settles at its own tone — some deep
