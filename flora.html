@@ -1158,6 +1158,9 @@ function sphereFrame(t){
 
 /* S1 sphere — ink-black at rest; palette blooms under the cursor on hover */
 const SPHERE_INK_RGB = [14, 14, 16];
+// Lighter end of the stomach's monochrome ink range (grayscale glyphs vary between
+// SPHERE_INK_RGB charcoal and this lighter grey, per glyph).
+const INK_LIGHT_RGB = [178, 178, 183];
 function spherePointerColorMix(sx, sy, morph, frame){
   if(morph < 0.55) return 0;
   if(PREFERS_REDUCED_MOTION) return morph > 0.65 ? 1 : 0;
@@ -2280,9 +2283,17 @@ function buildGarden(){
 /* draw one particle — glyph mode */
 function drawParticle(p, x, y, rad, alpha){
   if(alpha<=0.01) return;
-  ctx.globalAlpha=alpha;
   let c=PAL_RGB[p.ci];
-  if(p.gray>0) c=mix(c, p.gray, [204,204,204]);
+  if(p.gray>0){
+    // Grayscale glyph look borrowed from the S1 "scientifically speaking" sphere:
+    // a monochrome ink field where each glyph settles at its own tone — some deep
+    // charcoal (SPHERE_INK_RGB), some lighter grey — for a soft, dimensional read
+    // instead of a flat block. Tone is a STATIC per-glyph value (no added motion),
+    // and everything scales by p.gray so the coloured cluster phase (gray→0) is untouched.
+    const inkTone=mix(SPHERE_INK_RGB, p.dieAt, INK_LIGHT_RGB);   // charcoal → lighter grey
+    c=mix(c, p.gray, inkTone);
+  }
+  ctx.globalAlpha=alpha;
   ctx.font=`${(rad*2.6)|0}px ${GLYPH_FONT}`;
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle=rgbStr(c[0],c[1],c[2]);
