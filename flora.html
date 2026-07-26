@@ -589,9 +589,9 @@ are invisible .</div>
     <div class="t sm work right" data-in="0.361" data-out="0.383" style="bottom:clamp(36px, 7vh, 56px); right:var(--edge); left:auto; text-align:right; max-width:min(42vw, 340px);">what the science says : ~90% of serotonin is produced in the gut . gut microbes help regulate its production .</div>
 
     <!-- S3 — Catherine -->
-    <div class="t lg work" data-in="0.47" data-out="0.529" style="top:var(--top-band); left:var(--edge); max-width:min(54vw, 560px); white-space:normal;">during menopause,
+    <div class="t lg work" data-in="0.455" data-out="0.518" style="top:var(--top-band); left:var(--edge); max-width:min(54vw, 560px); white-space:normal;">during menopause,
 they become hard to read.</div>
-    <div class="t md work" data-in="0.532" data-out="0.578" style="top:calc(var(--top-band) + 1.2em); right:var(--edge); left:auto; text-align:right; max-width:min(42vw, 380px); white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
+    <div class="t md work" data-in="0.500" data-out="0.588" style="top:calc(var(--top-band) + 1.2em); right:var(--edge); left:auto; text-align:right; max-width:min(42vw, 380px); white-space:normal;">more than a billion women will be in menopause globally by 2030.</div>
 
     <!-- S4 -->
     <div class="t lg tc work" data-in="0.592" data-out="0.634">“you’re too emotional”</div>
@@ -2133,10 +2133,13 @@ const copyRoot = document.getElementById('copy');
 
 const MAIN_SEC = {
   s0:[0,.12], s1:[.12,.28], s2:[.28,.44],
-  s3a:[.44,.52], s3b:[.52,.60],
+  s3a:[.44,.50], s3b:[.50,.528],
   s4a:[.612,.662], s4s:[.662,.718], s4h:[.718,.738], s4r:[.738,.820],
   s5a:[.820,.875], s5b:[.875,.925], s5c:[.925,.96], s6:[.96,1.0]
 };
+// Cluster spread in main-timeline space (pM) — synced to billion-women copy (~scroll 0.50 in).
+const CLUSTER_SPREAD_START = 0.528;
+const CLUSTER_SPREAD_END   = 0.566;
 const GARDEN_LIVE_START=0.928;
 const GARDEN_ZOOM_START=0.942;
 const RAIN_DURATION=2.9;
@@ -2570,6 +2573,10 @@ function drawIsoFloor(alpha){
 /* ---------- main update ---------- */
 function updateParticlesMain(t, p0){
   ensureDotStorm();
+  _clusterResolvedCenters = null;
+  const clusterLayoutL = clusterLayout();
+  const inClusterHold = p0 >= CLUSTER_SPREAD_START && p0 < MAIN_SEC.s4a[0];
+  if(inClusterHold) resolveClusterCenters(t, clusterLayoutL);
   
   // decide phase + set targets
   let phase='s0';
@@ -2638,7 +2645,7 @@ function updateParticlesMain(t, p0){
       const slot=interiorSlots[ii]||{x:p.x,y:p.y};
       p._stormFrom=undefined;                      // re-capture exit pose when (re)entering storm
 
-      if(p0 < 0.552){
+      if(p0 < CLUSTER_SPREAD_START){
         // fill + desaturate: flowers wander FLUIDLY across the whole stomach interior
         p._clFrom=undefined;                       // re-seed the spread arc if we scroll back up
         const u3a=seg(p0, MAIN_SEC.s3a[0], MAIN_SEC.s3a[1]);
@@ -2652,13 +2659,10 @@ function updateParticlesMain(t, p0){
         let sx=slot.x+dx, sy=slot.y+dy;
         if(!gutInside(sx,sy)){ sx=slot.x; sy=slot.y; }   // never cross the outline
         p.tx=from.x+(sx-from.x)*a; p.ty=from.y+(sy-from.y)*a;
-        // desaturate EARLY so the transition to greyscale is COMPLETE just as the
-        // "during menopause" copy appears (copy data-in 0.47 ≈ pM 0.496)
-        targetGray=ease(seg(p0, 0.465, 0.49));
+        // desaturate so greyscale completes as "during menopause" lands (~scroll 0.455)
+        targetGray=ease(seg(p0, 0.452, 0.475));
       } else {
-        // CLUSTER SPREAD (pM 0.552 → 0.594): SLOW circular motion into clustered colored
-        // circles — forms gradually so the viewer has time to read the copy and connect it
-        // to the visual. Hold until storm, then dissolve into the tornado ring.
+        // CLUSTER SPREAD: into clustered colored circles, then hold until storm
         const L=clusterLayout();
         const ctrX=W*0.5, ctrY=H*0.52;
         if(p._cl===undefined){
@@ -2671,11 +2675,11 @@ function updateParticlesMain(t, p0){
           p._clFrom=1;
         }
         const cl=CLUSTER_FIELD[p._cl];
-        const cpos=clusterPos(cl, L);
+        const cpos=clusterCenterAt(p._cl, L, t);
         const tgt=clusterLocalTarget(idx, cl, cpos, L);
 
         // slow polar interpolation (angle + radius) around screen center → gentle arc
-        const sp=ease(seg(p0, 0.552, 0.594));
+        const sp=ease(seg(p0, CLUSTER_SPREAD_START, CLUSTER_SPREAD_END));
         const toR=Math.hypot(tgt.x-ctrX, tgt.y-ctrY);
         const toA=Math.atan2(tgt.y-ctrY, tgt.x-ctrX);
         let dA=toA-p._clFromA;
@@ -2689,11 +2693,12 @@ function updateParticlesMain(t, p0){
         // settle into packed disc positions but keep a gentle INDEPENDENT drift so the
         // clusters stay alive like the other scenes (two-frequency wander per glyph, no
         // shared orbit ring — a shared radius produced snake "trains" inside each circle).
-        const amp = Math.min(W, H) * 0.008;
+        const amp = Math.min(W, H) * 0.014;
         const fX = tgt.x + Math.cos(t * 0.6  + p.ph)       * amp + Math.cos(t * 0.37 + p.ph * 2.3) * amp * 0.5;
         const fY = tgt.y + Math.sin(t * 0.55 + p.ph * 1.3) * amp + Math.sin(t * 0.31 + p.ph * 1.7) * amp * 0.5;
         p.tx=clx+(fX-clx)*sp;
         p.ty=cly+(fY-cly)*sp;
+        clampGlyphToCluster(p, L, t);
 
         // recolor: ramp gray back to 0 as they spread → colorful again (stays colorful into storm)
         targetGray=1-sp;
@@ -2738,6 +2743,7 @@ function updateParticlesMain(t, p0){
       if(idx===0) { ensureDotStorm(); for(let dj=0;dj<ROWS;dj++) for(let di=0;di<COLS;di++) dotStorm[dj][di]={}; }
     }
   }
+  if(inClusterHold) separateClusterGlyphTargets(t, clusterLayoutL);
   return phase;
 }
 
@@ -2805,9 +2811,25 @@ function blockBasePos(blk, L){
    glyphs. Everything is stored NORMALIZED to the layout box (fx,fy in 0..1 of the box, rN as
    a fraction of box width) and resolved in clusterPos()/clusterRadius() so it survives resize. */
 const CLUSTER_AR = 0.9 * 9 / 16;                    // approx box height/width ratio (packing math)
+// Max drift extent (norm) + pad so laid-out circles stay separated while moving.
+const CLUSTER_DRIFT_SLACK = (0.034 + 0.038) * 1.52;
+const CLUSTER_CIRCLE_PAD = 0.016;
+function clusterExtentNorm(rN, ci){
+  let r = rN;
+  if(ci === 4) r *= 1.14;                          // sky blue size boost
+  return r + CLUSTER_DRIFT_SLACK + CLUSTER_CIRCLE_PAD;
+}
+const CLUSTER_COLOR_ORDER = (function(){
+  const order = PALETTE.map((_, i) => i);
+  for(let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(hash2(i, 99) * (i + 1));
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+  }
+  return order;
+})();
 const CLUSTER_FIELD = (function(){
   const arr = [];
-  const TARGET = 10;                                // far fewer circles than the old 6×4 grid (24)
+  const TARGET = PALETTE.length;                    // one circle per palette color — no duplicates
   const R_MIN = 0.055, R_MAX = 0.140;               // radius as a fraction of box width → size variety
   const GAP = 0.024;                                // min edge-to-edge gap (box-width units) → no overlap
   const MAX_ATTEMPTS = 1200;
@@ -2817,18 +2839,26 @@ const CLUSTER_FIELD = (function(){
     if(my >= 0.5) continue;
     const fx = mx + hash2(attempt + 13, 5)  * (1 - 2 * mx);
     const fy = my + hash2(attempt + 29, 41) * (1 - 2 * my);
+    const ciNew = CLUSTER_COLOR_ORDER[arr.length];
     let ok = true;
     for(const c of arr){
       const dx = fx - c.fx, dy = (fy - c.fy) * CLUSTER_AR;   // compare in box-width units
-      if(Math.hypot(dx, dy) < rN + c.rN + GAP){ ok = false; break; }
+      if(Math.hypot(dx, dy) < clusterExtentNorm(rN, ciNew) + clusterExtentNorm(c.rN, c.ci) + GAP){
+        ok = false; break;
+      }
     }
     if(!ok) continue;
     const n = arr.length;
     arr.push({
       fx, fy, rN,
-      ci: n % PALETTE.length,                       // spread the palette across the circles
+      ci: ciNew,
       area: rN * rN,                                // ∝ glyph capacity (bigger → more glyphs)
-      ph: hash2(n + 7, 3) * Math.PI * 2
+      ph: hash2(n + 7, 3) * Math.PI * 2,
+      // blurry-drift-circles motion (About-page pattern, adapted to canvas)
+      ampFracX: 0.034 + hash2(n + 51, 7) * 0.038,
+      ampFracY: 0.034 + hash2(n + 67, 11) * 0.038,
+      periodX: 27 + hash2(n + 73, 13) * 15,
+      periodY: 30 + hash2(n + 79, 17) * 12
     });
   }
   return arr;
@@ -2858,45 +2888,173 @@ function clusterLayout(){
 function clusterPos(cl, L){
   return { x: L.x0 + cl.fx * L.boxW, y: L.y0 + cl.fy * L.boxH };
 }
+// Slightly lighter than the glyphs in each circle (same hue, lifted toward white).
+function clusterBlobRgb(ci){
+  return mix(PAL_RGB[ci], 0.36, [255, 255, 255]);
+}
+// Slow sin/cos drift for soft orbs (blurry-drift-circles skill — canvas adaptation).
+function clusterDrift(cl, t, L){
+  if(PREFERS_REDUCED_MOTION) return { dx: 0, dy: 0 };
+  const driftSpeed = 12;
+  const tt = t * driftSpeed;
+  const ampX = cl.ampFracX * L.boxW;
+  const ampY = cl.ampFracY * L.boxH;
+  const dx = Math.sin(tt / cl.periodX + cl.ph) * ampX
+    + Math.cos(tt / (cl.periodX * 1.28) + cl.ph * 2.1) * ampX * 0.52;
+  const dy = Math.cos(tt / cl.periodY + cl.ph * 1.35) * ampY
+    + Math.sin(tt / (cl.periodY * 1.12) + cl.ph * 0.85) * ampY * 0.52;
+  return { dx, dy };
+}
+let _clusterResolvedCenters = null;
+
+// Resolve drifting circle centers with separation so orbs (and their glyphs) never overlap.
+function resolveClusterCenters(t, L){
+  const padPx = 14;
+  const pts = CLUSTER_FIELD.map((cl, n) => {
+    const base = clusterPos(cl, L);
+    const d = clusterDrift(cl, t, L);
+    return {
+      n, cl,
+      x: base.x + d.dx,
+      y: base.y + d.dy,
+      r: clusterRadius(cl, L)
+    };
+  });
+  for(let iter = 0; iter < 5; iter++){
+    for(let i = 0; i < pts.length; i++){
+      for(let j = i + 1; j < pts.length; j++){
+        const a = pts[i], b = pts[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let dist = Math.hypot(dx, dy);
+        if(dist < 1e-4){ dx = 1; dy = 0; dist = 1; }
+        const minD = a.r + b.r + padPx;
+        if(dist >= minD) continue;
+        const push = (minD - dist) * 0.55;
+        const nx = dx / dist, ny = dy / dist;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
+      }
+    }
+    for(const p of pts){
+      const m = p.r + 10;
+      p.x = Math.max(L.x0 + m, Math.min(L.x1 - m, p.x));
+      p.y = Math.max(L.y0 + m, Math.min(L.y1 - m, p.y));
+    }
+  }
+  _clusterResolvedCenters = pts.map(p => ({ x: p.x, y: p.y, r: p.r }));
+  return _clusterResolvedCenters;
+}
+function clusterCenterAt(n, L, t){
+  if(!_clusterResolvedCenters) resolveClusterCenters(t, L);
+  const c = _clusterResolvedCenters[n];
+  return c ? { x: c.x, y: c.y } : clusterPos(CLUSTER_FIELD[n], L);
+}
+function clampGlyphToCluster(p, L, t){
+  const n = p._cl;
+  if(n === undefined) return;
+  const cl = CLUSTER_FIELD[n];
+  if(!cl) return;
+  const c = clusterCenterAt(n, L, t);
+  const R = clusterRadius(cl, L) * 0.88;
+  const dx = p.tx - c.x, dy = p.ty - c.y;
+  const d = Math.hypot(dx, dy);
+  if(d <= R || d < 1e-4) return;
+  p.tx = c.x + (dx / d) * R;
+  p.ty = c.y + (dy / d) * R;
+}
+const CLUSTER_GLYPH_MIN = 11;
+function separateClusterGlyphTargets(t, L){
+  const CELL = CLUSTER_GLYPH_MIN;
+  const items = [];
+  for(let i = 0; i < N; i++){
+    const p = P[i];
+    if(p._cl === undefined || p.alpha < 0.04) continue;
+    items.push(p);
+  }
+  if(items.length < 2) return;
+  for(let iter = 0; iter < 2; iter++){
+    const grid = new Map();
+    for(const p of items){
+      const key = ((p.tx / CELL) | 0) + ',' + ((p.ty / CELL) | 0);
+      if(!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(p);
+    }
+    for(const p of items){
+      const cx = (p.tx / CELL) | 0, cy = (p.ty / CELL) | 0;
+      for(let oy = -1; oy <= 1; oy++){
+        for(let ox = -1; ox <= 1; ox++){
+          const bucket = grid.get((cx + ox) + ',' + (cy + oy));
+          if(!bucket) continue;
+          for(const q of bucket){
+            if(q === p) continue;
+            const dx = q.tx - p.tx, dy = q.ty - p.ty;
+            const d2 = dx * dx + dy * dy;
+            if(d2 >= CLUSTER_GLYPH_MIN * CLUSTER_GLYPH_MIN || d2 < 0.01) continue;
+            const d = Math.sqrt(d2);
+            const push = (CLUSTER_GLYPH_MIN - d) * 0.42;
+            const nx = dx / d, ny = dy / d;
+            p.tx -= nx * push;
+            p.ty -= ny * push;
+            q.tx += nx * push;
+            q.ty += ny * push;
+            clampGlyphToCluster(p, L, t);
+            clampGlyphToCluster(q, L, t);
+          }
+        }
+      }
+    }
+  }
+}
+function clusterCenter(cl, L, t){
+  const n = CLUSTER_FIELD.indexOf(cl);
+  return n >= 0 ? clusterCenterAt(n, L, t) : clusterPos(cl, L);
+}
 function clusterRadius(cl, L){
-  return cl.rN * L.boxW;
+  let r = cl.rN * L.boxW;
+  if(cl.ci === 4) r *= 1.14;                       // sky blue — slightly larger circle
+  return r;
 }
 // Centre-weighted disk fill: exponent > 0.5 biases glyphs toward the middle, so each circle
 // is DENSE at its core and thins out toward the rim (sqrt/0.5 would be perfectly uniform).
 function clusterLocalTarget(idx, cl, cpos, L){
   const R = clusterRadius(cl, L);
-  const localR = R * Math.pow(hash2(idx + 1, 100), 1.35);
+  const localR = R * Math.pow(hash2(idx + 1, 100), 1.22);
   const localA = hash2(idx + 7, 200) * Math.PI * 2 + cl.ph;
   return { x: cpos.x + Math.cos(localA) * localR, y: cpos.y + Math.sin(localA) * localR };
 }
-// Soft, blurry circle under each cluster: a radial gradient from a pale tint at the core to
-// fully transparent at the rim, so there is NO hard border and it melts into the light
-// background. Non-overlap is guaranteed by the rejection-sampled layout above.
+// Soft blurry orbs under each cluster (blurry-drift-circles skill on canvas):
+// radial falloff 0 → 60% → 100%, CSS-blur equivalent via ctx.filter, slow drift on center.
 function drawClusterField(prog, alpha, t){
   if(alpha <= 0.01) return;
   const L = clusterLayout();
-  // STABLE membership count per cluster (assigned particles, not a per-frame proximity test)
-  // so the background circles don't pulse as flowers settle in.
   const counts = new Array(CLUSTER_FIELD.length).fill(0);
   for(let idx=0; idx<N; idx++){
     const cn = P[idx]._cl;
     if(cn !== undefined) counts[cn]++;
   }
   const e = ease(prog);
+  const midStopFactor = 0.45;
+  const centerOp = 0.72;
   for(let n=0; n<CLUSTER_FIELD.length; n++){
     if(counts[n] <= 0) continue;
     const cl = CLUSTER_FIELD[n];
-    const cpos = clusterPos(cl, L);
-    const r = clusterRadius(cl, L) * e;             // grows in with the formation
+    const cpos = clusterCenterAt(n, L, t);
+    const r = clusterRadius(cl, L) * e;
     if(r < 1) continue;
-    const tint = mix(PAL_RGB[cl.ci], 0.74, [255,255,255]);   // pale → blends with the background
-    const a = alpha * 0.55;
-    const g = ctx.createRadialGradient(cpos.x, cpos.y, r*0.12, cpos.x, cpos.y, r);
-    g.addColorStop(0,    `rgba(${tint[0]|0},${tint[1]|0},${tint[2]|0},${a})`);
-    g.addColorStop(0.55, `rgba(${tint[0]|0},${tint[1]|0},${tint[2]|0},${a*0.45})`);
-    g.addColorStop(1,    `rgba(${tint[0]|0},${tint[1]|0},${tint[2]|0},0)`);
+    const rgb = clusterBlobRgb(cl.ci);
+    const op = alpha * centerOp * e;
+    const blurPx = Math.max(10, Math.min(22, r * 0.14));
+    ctx.save();
+    ctx.filter = `blur(${blurPx}px)`;
+    const g = ctx.createRadialGradient(cpos.x, cpos.y, 0, cpos.x, cpos.y, r);
+    g.addColorStop(0,    `rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},${op})`);
+    g.addColorStop(0.6,  `rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},${op * midStopFactor})`);
+    g.addColorStop(1,    `rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},0)`);
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(cpos.x, cpos.y, r, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
 }
@@ -3090,7 +3248,7 @@ function frame(){
     // const diamondFade = 1 - seg(pM, 0.560, 0.590);
     // const blockGrow = seg(pM, 0.552, 0.600);
     // clustered colored circles grow in slowly as the clusters form, then hold
-    const clusterProg = seg(pM, 0.552, 0.594);
+    const clusterProg = seg(pM, CLUSTER_SPREAD_START, CLUSTER_SPREAD_END);
 
     // Background condense/outline dots disabled for the stomach scene (no background dots).
     // Reversible: re-enable to restore the gut-formation dots.
@@ -3126,7 +3284,7 @@ function frame(){
       // During the cluster hold, colour each glyph by the SINGLE colour of the circle it
       // belongs to → clean one-colour circles. Scoped to the hold (not the storm) so the
       // storm keeps its natural per-particle colour mix. Earlier scenes don't run this loop.
-      const clusterColorOn = pM >= 0.552 && pM < MAIN_SEC.s4a[0];
+      const clusterColorOn = pM >= CLUSTER_SPREAD_START && pM < MAIN_SEC.s4a[0];
       for(let idx = 0; idx < N; idx++){
         const p = P[idx];
         if(p.alpha < 0.02) continue;
