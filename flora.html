@@ -2814,10 +2814,14 @@ const CLUSTER_AR = 0.9 * 9 / 16;                    // approx box height/width r
 // Max drift extent (norm) + pad so laid-out circles stay separated while moving.
 const CLUSTER_DRIFT_SLACK = (0.034 + 0.038) * 1.52;
 const CLUSTER_CIRCLE_PAD = 0.016;
-function clusterExtentNorm(rN, ci){
+// Layout-time footprint (rest radius only). Drift overlap is handled per frame in resolveClusterCenters().
+function clusterPackExtentNorm(rN, ci){
   let r = rN;
-  if(ci === 4) r *= 1.14;                          // sky blue size boost
-  return r + CLUSTER_DRIFT_SLACK + CLUSTER_CIRCLE_PAD;
+  if(ci === 4) r *= 1.14;
+  return r + CLUSTER_CIRCLE_PAD;
+}
+function clusterExtentNorm(rN, ci){
+  return clusterPackExtentNorm(rN, ci) + CLUSTER_DRIFT_SLACK;
 }
 const CLUSTER_COLOR_ORDER = (function(){
   const order = PALETTE.map((_, i) => i);
@@ -2843,7 +2847,7 @@ const CLUSTER_FIELD = (function(){
     let ok = true;
     for(const c of arr){
       const dx = fx - c.fx, dy = (fy - c.fy) * CLUSTER_AR;   // compare in box-width units
-      if(Math.hypot(dx, dy) < clusterExtentNorm(rN, ciNew) + clusterExtentNorm(c.rN, c.ci) + GAP){
+      if(Math.hypot(dx, dy) < clusterPackExtentNorm(rN, ciNew) + clusterPackExtentNorm(c.rN, c.ci) + GAP){
         ok = false; break;
       }
     }
@@ -2855,6 +2859,25 @@ const CLUSTER_FIELD = (function(){
       area: rN * rN,                                // ∝ glyph capacity (bigger → more glyphs)
       ph: hash2(n + 7, 3) * Math.PI * 2,
       // blurry-drift-circles motion (About-page pattern, adapted to canvas)
+      ampFracX: 0.034 + hash2(n + 51, 7) * 0.038,
+      ampFracY: 0.034 + hash2(n + 67, 11) * 0.038,
+      periodX: 27 + hash2(n + 73, 13) * 15,
+      periodY: 30 + hash2(n + 79, 17) * 12
+    });
+  }
+  // Fallback: guarantee one circle per palette color (grid slots + smaller rN).
+  while(arr.length < TARGET){
+    const n = arr.length;
+    const ciNew = CLUSTER_COLOR_ORDER[n];
+    const slot = n;
+    const fx = 0.17 + (slot % 4) * 0.19;
+    const fy = 0.34 + Math.floor(slot / 4) * 0.26;
+    const rN = R_MIN * (0.78 + hash2(n + 11, 47) * 0.18);
+    arr.push({
+      fx, fy, rN,
+      ci: ciNew,
+      area: rN * rN,
+      ph: hash2(n + 7, 3) * Math.PI * 2,
       ampFracX: 0.034 + hash2(n + 51, 7) * 0.038,
       ampFracY: 0.034 + hash2(n + 67, 11) * 0.038,
       periodX: 27 + hash2(n + 73, 13) * 15,
@@ -3038,14 +3061,13 @@ function drawClusterField(prog, alpha, t){
   const midStopFactor = 0.45;
   const centerOp = 0.72;
   for(let n=0; n<CLUSTER_FIELD.length; n++){
-    if(counts[n] <= 0) continue;
     const cl = CLUSTER_FIELD[n];
     const cpos = clusterCenterAt(n, L, t);
     const r = clusterRadius(cl, L) * e;
     if(r < 1) continue;
     const rgb = clusterBlobRgb(cl.ci);
-    const op = alpha * centerOp * e;
-    const blurPx = Math.max(10, Math.min(22, r * 0.14));
+    const op = alpha * centerOp * e * (counts[n] > 0 ? 1 : 0.55);
+    const blurPx = Math.max(8, Math.min(18, r * 0.11));
     ctx.save();
     ctx.filter = `blur(${blurPx}px)`;
     const g = ctx.createRadialGradient(cpos.x, cpos.y, 0, cpos.x, cpos.y, r);
