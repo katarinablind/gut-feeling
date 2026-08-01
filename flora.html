@@ -138,6 +138,13 @@
     font-size:12px; letter-spacing:0.06em; line-height:1.6;
     color:#666; font-weight:400; white-space:normal; max-width:300px;
   }
+  .t.hover-hint{
+    font-size:11px;
+    letter-spacing:0.04em;
+    color:#8a8a8a;
+    white-space:nowrap;
+    pointer-events:none;
+  }
   .quietitalic{ font-style:italic; color:#555; }
   .faint{ color:#9a9a9a; }
   #copy.storm-dark .work,
@@ -543,17 +550,17 @@
   <div id="stage"><canvas id="c"></canvas></div>
   <div id="scroll"></div>
 
-  <!-- Compact left-edge chrome: brain→gut axis, info underneath -->
+  <!-- Compact left-edge chrome: gut→brain axis, info underneath -->
   <header class="site-header">
     <div class="journey-wrapper">
       <div class="journey-rail">
-        <span class="journey-end journey-end--brain" id="brain-link" role="button" tabindex="0" aria-label="Scroll to top">brain</span>
+        <span class="journey-end journey-end--gut" id="gut-link" role="button" tabindex="0" aria-label="Scroll to top">gut</span>
         <svg class="journey-rail-svg" viewBox="0 0 24 120" preserveAspectRatio="none" aria-hidden="true">
-          <!-- Vertical winding path: brain (top) → gut (bottom). Progress fills downward. -->
+          <!-- Vertical winding path: gut (top) → brain (bottom). Progress fills downward. -->
           <path id="journey-bg" d="M 12 4 C 4 18, 20 30, 12 44 C 4 58, 20 70, 12 84 C 6 96, 18 106, 12 116" />
           <path id="journey-fg" d="M 12 4 C 4 18, 20 30, 12 44 C 4 58, 20 70, 12 84 C 6 96, 18 106, 12 116" />
         </svg>
-        <span class="journey-end journey-end--gut" id="gut-link" role="button" tabindex="0" aria-label="Scroll to bottom">gut</span>
+        <span class="journey-end journey-end--brain" id="brain-link" role="button" tabindex="0" aria-label="Scroll to bottom">brain</span>
       </div>
     </div>
     <button class="info-btn" type="button" data-modal="about" title="About" aria-label="About">i</button>
@@ -584,6 +591,7 @@ microbiome
 shapes mood and
 cognition ;</div>
     <div class="t sm work left indent" data-in="0.309" data-out="0.383" style="top:calc(var(--top-band) + (4 * 1.18 * clamp(32px, 4.5vw, 64px)) + 0.85rem); left:calc(var(--edge) + 80px); max-width:min(48vw, 420px);">through the gut–brain axis .</div>
+    <div class="t mono faint hover-hint" data-in="0.318" data-out="0.383" style="top:calc(var(--top-band) + (4 * 1.18 * clamp(32px, 4.5vw, 64px)) + 0.85rem + 2.4rem); left:calc(var(--edge) + 80px);">hover over the path to learn more</div>
     <div class="t lg work" data-in="0.341" data-out="0.383" style="top:auto; bottom:calc(clamp(36px, 7vh, 56px) + (3.8 * 1.5 * clamp(13px, 1.4vw, 18px)) + 1.35rem + 28px); right:var(--edge); left:auto; text-align:right; max-width:min(46vw, 460px); white-space:normal;">but , these signals
 are invisible .</div>
     <div class="t sm work right" data-in="0.361" data-out="0.383" style="bottom:clamp(36px, 7vh, 56px); right:var(--edge); left:auto; text-align:right; max-width:min(42vw, 340px);">what the science says : ~90% of serotonin is produced in the gut . gut microbes help regulate its production .</div>
@@ -3542,7 +3550,7 @@ if(cue){
   cue.addEventListener('click', () => scrollToProgress(0.03));
 }
 
-/* Header anchors — Brain (top of rail) → page top; Gut (bottom) → page end. */
+/* Header anchors — Gut (top of rail) → page top; Brain (bottom) → page end. */
 function scrollToPage(position /* 'top' | 'bottom' */){
   const max = scrollEl.scrollHeight - window.innerHeight;
   const target = position === 'bottom' ? max : 0;
@@ -3560,8 +3568,8 @@ function bindHeaderAnchor(id, target){
     }
   });
 }
-bindHeaderAnchor('brain-link', 'top');
-bindHeaderAnchor('gut-link', 'bottom');
+bindHeaderAnchor('gut-link', 'top');
+bindHeaderAnchor('brain-link', 'bottom');
 
 /* ---------- boot ---------- */
 window.addEventListener('resize', ()=>{
