@@ -1585,6 +1585,10 @@ let axisPopStrength = 0;
 let axisActiveCallout = null;
 let axisStickyIdx = -1;
 let axisStickyU = null;
+/* Fact for the current sticky hover session; advances on each new hover so
+   consecutive reads don't repeat the same callout. */
+let axisHoverFactId = -1;
+let lastAxisFactId = -1;
 const AXIS_GLYPH_HOVER_R = 52;
 const AXIS_POP_BASE_RAD = 6.0;
 const AXIS_POP_TARGET_RAD = 17;
@@ -1651,8 +1655,7 @@ function updateParticles(t, dt){
   axisActiveCallout = null;
 
   if(!inAxisPhase || !pointer.active){
-    axisStickyIdx = -1;
-    axisStickyU = null;
+    clearAxisStickyHover();
   } else {
     const { halfW } = axisColumnGeom();
     const { u, dist } = axisUFromPointer(pointer.x, pointer.y);
@@ -1677,8 +1680,7 @@ function updateParticles(t, dt){
         axisPopIdx = axisStickyIdx;
         axisPopStrength = 1 - d / (AXIS_GLYPH_HOVER_R * 1.65);
       } else {
-        axisStickyIdx = -1;
-        axisStickyU = null;
+        clearAxisStickyHover();
       }
     }
 
@@ -1695,6 +1697,7 @@ function updateParticles(t, dt){
         axisStickyIdx = axisPopIdx;
         axisStickyU = axisStreamU(P[axisPopIdx], t);
         axisPopStrength = 1 - bestD / AXIS_GLYPH_HOVER_R;
+        axisHoverFactId = nextAxisFactId();
       } else {
         axisPopIdx = -1;
         axisPopStrength = 0;
@@ -1702,7 +1705,7 @@ function updateParticles(t, dt){
     }
 
     if(axisPopIdx >= 0 && axisPopStrength > 0.08 && dist <= halfW * 5){
-      axisActiveCallout = pickAxisFactForGlyph(axisPopIdx);
+      axisActiveCallout = AXIS_FACTS[Math.max(0, axisHoverFactId) % AXIS_FACTS.length];
     }
   }
 
@@ -1970,7 +1973,7 @@ function updateParticles(t, dt){
   return phase;
 }
 
-/* axis hover — verified gut→brain facts (one unique fact per stream glyph) */
+/* axis hover — verified gut→brain facts (rotated per hover session) */
 const AXIS_FACTS = [
   { title: 'your microbiome', sub: 'your intestines host trillions of microbes that exchange chemical signals with gut cells .', side: 'left' },
   { title: 'two-way signaling', sub: 'the gut–brain axis is bidirectional — signals travel from gut to brain and brain to gut .', side: 'left' },
@@ -1981,11 +1984,16 @@ const AXIS_FACTS = [
   { title: 'local gut reflexes', sub: 'in the intestine , enteric neurons form reflex circuits that can coordinate function with limited brain input .', side: 'right' },
   { title: 'many pathways', sub: 'gut–brain communication involves neural , endocrine , immune , and microbial routes working together .', side: 'right' },
 ];
-function pickAxisFactForGlyph(idx){
-  const p = P[idx];
-  initAxisStream(p);
-  const id = p._axisFactId ?? Math.floor(hash2(p.i + 29, p.j + 41) * AXIS_FACTS.length);
-  return AXIS_FACTS[id % AXIS_FACTS.length];
+function nextAxisFactId(){
+  if(AXIS_FACTS.length <= 1) return 0;
+  if(lastAxisFactId < 0) return Math.floor(Math.random() * AXIS_FACTS.length);
+  return (lastAxisFactId + 1) % AXIS_FACTS.length;
+}
+function clearAxisStickyHover(){
+  if(axisHoverFactId >= 0) lastAxisFactId = axisHoverFactId;
+  axisStickyIdx = -1;
+  axisStickyU = null;
+  axisHoverFactId = -1;
 }
 function axisPopGlyphPos(){
   if(axisPopIdx < 0 || axisPopStrength <= 0.08) return null;
