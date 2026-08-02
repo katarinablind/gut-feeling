@@ -1973,16 +1973,18 @@ function updateParticles(t, dt){
   return phase;
 }
 
-/* axis hover — verified gut→brain facts (rotated per hover session) */
+/* axis hover — short, distinct gut–brain tips (rotated per hover) */
 const AXIS_FACTS = [
-  { title: 'your microbiome', sub: 'your intestines host trillions of microbes that exchange chemical signals with gut cells .', side: 'left' },
+  { title: 'your microbiome', sub: 'trillions of microbes live in your gut and exchange chemical signals with the rest of your body .', side: 'left' },
   { title: 'two-way signaling', sub: 'the gut–brain axis is bidirectional — signals travel from gut to brain and brain to gut .', side: 'left' },
-  { title: 'the vagus nerve', sub: 'the vagus nerve carries sensory information from the gut to the brain , and motor signals back .', side: 'left' },
-  { title: 'serotonin in the gut', sub: 'most serotonin in the body is synthesized in the gi tract — mainly by enterochromaffin cells .', side: 'left' },
-  { title: 'microbes & serotonin', sub: 'gut microbes can modulate host serotonin pathways , both directly and through metabolites they produce .', side: 'right' },
-  { title: 'short-chain fatty acids', sub: 'bacterial fermentation produces scfas — metabolites studied as signals along the microbiota–gut–brain axis .', side: 'right' },
-  { title: 'local gut reflexes', sub: 'in the intestine , enteric neurons form reflex circuits that can coordinate function with limited brain input .', side: 'right' },
-  { title: 'many pathways', sub: 'gut–brain communication involves neural , endocrine , immune , and microbial routes working together .', side: 'right' },
+  { title: 'the vagus nerve', sub: 'the path you\'re following echoes the vagus nerve — the longest cranial nerve , and a primary route for gut–brain signals in both directions .', side: 'left' },
+  { title: 'serotonin in the gut', sub: 'most of the body\'s serotonin is made in the gut — not the brain .', side: 'left' },
+  { title: 'a second brain', sub: 'the enteric nervous system holds hundreds of millions of neurons and can coordinate gut function with limited brain input .', side: 'left' },
+  { title: 'stress & the gut', sub: 'stress can change gut motility and microbial balance — and gut signals can heighten the stress response .', side: 'left' },
+  { title: 'food feeds microbes', sub: 'what you eat helps determine which gut microbes thrive , and which chemicals they produce .', side: 'right' },
+  { title: 'short-chain fatty acids', sub: 'gut bacteria ferment fiber into short-chain fatty acids — metabolites that can signal along the gut–brain axis .', side: 'right' },
+  { title: 'gut immunity', sub: 'a large share of the immune system lives along the gut lining and can send signals toward the brain .', side: 'right' },
+  { title: 'tiny chemists', sub: 'gut microbes help synthesize vitamins and other metabolites your body can use .', side: 'right' },
 ];
 function nextAxisFactId(){
   if(AXIS_FACTS.length <= 1) return 0;
